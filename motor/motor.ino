@@ -40,7 +40,7 @@ void step_elevation() {
   delay(1);
 }
 
-void rotate_azimuth(int degrees, bool direction) {
+void rotate_azimuth(float degrees, bool direction) {
   // RIGHT = UP
   // LEFT = DOWN
   if (direction == RIGHT) {
@@ -49,9 +49,12 @@ void rotate_azimuth(int degrees, bool direction) {
   } else if (direction == LEFT) {
     digitalWrite(AZIMUTH_DIR, LEFT);
     digitalWrite(ELEVATION_DIR, DOWN);
+  } else {
+    return;
   }
+  int stepsAmount = (8000 / 360) * degrees;
 
-  for (int i = 0; i < 8000; i++) {
+  for (int i = 0; i < stepsAmount; i++) {
     if (i % 5 == 0) {
       step_elevation();
       step_elevation();
@@ -60,8 +63,32 @@ void rotate_azimuth(int degrees, bool direction) {
   }
 }
 
+void rotate_elevation(int steps, bool direction) {
+  // RIGHT = UP
+  // LEFT = DOWN
+  if (direction == UP) {
+    digitalWrite(ELEVATION_DIR, UP);
+  } else if (direction == DOWN) {
+    digitalWrite(ELEVATION_DIR, DOWN);
+  } else {
+    return;
+  }
+  // int stepsAmount = (2000 / 360) * degrees;
+
+  for (int i = 0; i < steps; i++) {
+    step_elevation();
+    step_elevation();
+  }
+}
 void loop() {
+  for (int i = 0; i < 360; i++) {
+    rotate_azimuth(0.5, RIGHT);
+    rotate_elevation(7, DOWN);
+  }
   delay(5000);
-  rotate_azimuth(360, RIGHT);
+  for (int i = 0; i < 360; i++) {
+    rotate_azimuth(0.5, LEFT);
+    rotate_elevation(7, UP);
+  }
   delay(5000);
 }
