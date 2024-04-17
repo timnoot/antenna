@@ -1,0 +1,6 @@
+rood - geel, oranje - blauw
+
+
+MS1 = HIGH
+MS2 = HIGH
+MS3 = HIGH

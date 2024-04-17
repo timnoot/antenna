@@ -21,8 +21,8 @@ void setup() {
 
   pinMode(ELEVATION_DIR, OUTPUT);    // elavation direction
   pinMode(AZIMUTH_DIR, OUTPUT);      // azimuth direction
-  digitalWrite(ELEVATION_DIR, LOW);  // elavation direction HIGH = omlaag, LOW = omhoog
-  digitalWrite(AZIMUTH_DIR, HIGH);   // azimuth direction HIGH = rechtsom, LOW = linksom
+  // digitalWrite(ELEVATION_DIR, LOW);  // elavation direction HIGH = omlaag, LOW = omhoog
+  // digitalWrite(AZIMUTH_DIR, HIGH);   // azimuth direction HIGH = rechtsom, LOW = linksom
 
   delay(1000);
 }
