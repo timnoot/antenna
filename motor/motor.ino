@@ -64,7 +64,7 @@ void go_to_relative(float azimuthDegrees, float elevationDegrees, int breakAfter
   if (elevationStepsAbs > azimuthStepsAbs) {                        // Elevation is leading, because it has more steps
     float orignialStepRatio = elevationStepsAbs / azimuthStepsAbs;  // Calculate the ratio between the steps
 
-    while (elevationStepsAbs || millis() - startTime < breakAfterSeconds * 1000) {
+    while (elevationStepsAbs && millis() - startTime < breakAfterSeconds * 1000) {
       do_step(ELEVATION_STEP);
       elevationStepsAbs--;
       if ((elevationStepsAbs / azimuthStepsAbs) < orignialStepRatio) {
@@ -75,7 +75,7 @@ void go_to_relative(float azimuthDegrees, float elevationDegrees, int breakAfter
   } else {  // Azimuth is leading, because it has more steps
     float orignialStepRatio = azimuthStepsAbs / elevationStepsAbs;
 
-    while (azimuthStepsAbs || millis() - startTime < breakAfterSeconds * 1000) {
+    while (azimuthStepsAbs && millis() - startTime < breakAfterSeconds * 1000) {
       do_step(AZIMUTH_STEP);
       azimuthStepsAbs--;
       if ((azimuthStepsAbs / elevationStepsAbs) < orignialStepRatio) {
@@ -95,15 +95,10 @@ void go_to(float azimuthDegrees, float elevationDegrees, int breakAfterSeconds =
   if (abs(azimuthDegrees - absoluteAzimuthDegrees) < 0.1 && abs(elevationDegrees - absoluteElevationDegrees) < 0.1) {
     return;
   }
+
   go_to_relative(azimuthDegrees - absoluteAzimuthDegrees, elevationDegrees - absoluteElevationDegrees, breakAfterSeconds);
   absoluteAzimuthDegrees = azimuthDegrees;
   absoluteElevationDegrees = elevationDegrees;
-}
-
-void set_zero_points() {
-  int azimuthDegrees = 0;
-  int elevationDegrees = 0;
-  // to be continued
 }
 
 String getValue(String arduinoStr, String key) {
@@ -135,5 +130,13 @@ void updatePosition() {
   }
 }
 
+void set_zero_points() {
+  int azimuthDegrees = 0;
+  int elevationDegrees = 0;
+  // to be continued
+}
+
 void loop() {
+  go_to(360, 0);
+  delay(5000);
 }
