@@ -12,6 +12,10 @@ const int STEPS_PER_CIRCLE = 3200;  // 200 steps per revolution * 16 microsteps
 const float AZIMUTH_GEAR_RATIO = 2.5;
 const float ELEVATION_GEAR_RATIO = 22;
 
+// Global Variables
+float absoluteAzimuthDegrees = 0;    // 0 degrees is north
+float absoluteElevationDegrees = 0;  // 0 degrees is horizontal
+
 typedef enum {
   RIGHT = true,
   LEFT = false,
@@ -28,16 +32,20 @@ void setup() {
 
   pinMode(AZIMUTH_DIR, OUTPUT);    // azimuth direction
   pinMode(ELEVATION_DIR, OUTPUT);  // elavation direction
+
+  set_zero_points();
 }
 
 void do_step(int pin) {
   digitalWrite(pin, HIGH);
-  delay(1);
+  delayMicroseconds(500);
   digitalWrite(pin, LOW);
-  delay(1);
+  delayMicroseconds(500);
 }
 
-void go_to_relative(float azimuthDegrees, float elevationDegrees) {
+void go_to_relative(float azimuthDegrees, float elevationDegrees, int breakAfterSeconds = 60) {
+  unsigned long startTime = millis();  // Start time of the current movement
+
   // Rotate both azimuth and elevation at the same time
   int azimuthSteps = ((STEPS_PER_CIRCLE * AZIMUTH_GEAR_RATIO) / 360.0) * azimuthDegrees;
   int elevationSteps = ((STEPS_PER_CIRCLE * ELEVATION_GEAR_RATIO) / 360.0) * elevationDegrees;
@@ -56,7 +64,7 @@ void go_to_relative(float azimuthDegrees, float elevationDegrees) {
   if (elevationStepsAbs > azimuthStepsAbs) {                        // Elevation is leading, because it has more steps
     float orignialStepRatio = elevationStepsAbs / azimuthStepsAbs;  // Calculate the ratio between the steps
 
-    while (elevationStepsAbs) {  // While there are still elevation steps to take
+    while (elevationStepsAbs || millis() - startTime < breakAfterSeconds * 1000) {
       do_step(ELEVATION_STEP);
       elevationStepsAbs--;
       if ((elevationStepsAbs / azimuthStepsAbs) < orignialStepRatio) {
@@ -67,7 +75,7 @@ void go_to_relative(float azimuthDegrees, float elevationDegrees) {
   } else {  // Azimuth is leading, because it has more steps
     float orignialStepRatio = azimuthStepsAbs / elevationStepsAbs;
 
-    while (azimuthStepsAbs) {
+    while (azimuthStepsAbs || millis() - startTime < breakAfterSeconds * 1000) {
       do_step(AZIMUTH_STEP);
       azimuthStepsAbs--;
       if ((azimuthStepsAbs / elevationStepsAbs) < orignialStepRatio) {
@@ -78,9 +86,52 @@ void go_to_relative(float azimuthDegrees, float elevationDegrees) {
   }
 }
 
+void go_to(float azimuthDegrees, float elevationDegrees, int breakAfterSeconds = 60) {
+  if (azimuthDegrees < 0 || azimuthDegrees > 360 || elevationDegrees < -10 || elevationDegrees > 90) {
+    Serial.println("Invalid coordinates");
+    return;
+  }
+  // if within 1 degree of the current position, don't move
+  if (abs(azimuthDegrees - absoluteAzimuthDegrees) < 1 && abs(elevationDegrees - absoluteElevationDegrees) < 1) {
+    return;
+  }
+  go_to_relative(azimuthDegrees - absoluteAzimuthDegrees, elevationDegrees - absoluteElevationDegrees, breakAfterSeconds);
+  absoluteAzimuthDegrees = azimuthDegrees;
+  absoluteElevationDegrees = elevationDegrees;
+}
+
+void set_zero_points() {
+  int azimuthDegrees = 0;
+  int elevationDegrees = 0;
+  // to be continued
+}
+
+String getValue(String arduinoStr, String key) {
+  // example jsonStr: "sa:NOAA 18;az:20.10;el:9.67;"
+  int keyIndex = arduinoStr.indexOf(key);
+  if (keyIndex == -1) {
+    return "";
+  }
+  int valueIndex = keyIndex + key.length() + 1;
+  int nextDelimiterIndex = arduinoStr.indexOf(";", valueIndex);
+  if (nextDelimiterIndex == -1) {
+    nextDelimiterIndex = arduinoStr.length();
+  }
+  return arduinoStr.substring(valueIndex, nextDelimiterIndex);
+}
+
 void loop() {
-  go_to_relative(180, 45);
-  delay(5000);
-  go_to_relative(-180, -45);
-  delay(5000);
+  if (Serial.available() > 0) {
+    String arduinoStr = Serial.readString();
+    String azimuthStr = getValue(arduinoStr, "az");    // Azimuth
+    String elevationStr = getValue(arduinoStr, "el");  // Elevation
+    float azimuth = azimuthStr.toFloat();
+    float elevation = elevationStr.toFloat();
+
+    String satteliteStr = getValue(arduinoStr, "sa");  // Sattelite name
+    // keep checking for new data while moving
+
+    go_to(azimuth, elevation, 2);
+    // delay(5000);
+  }
 }
