@@ -56,11 +56,12 @@ void rotate_azimuth(float degrees, Direction direction) {
   }
 }
 
-void rotate_elevation(int steps, Direction direction) {
+void rotate_elevation(int degrees, Direction direction) {
   digitalWrite(ELEVATION_DIR, direction);  
-  // int stepsAmount = (2000 / 360) * degrees;
 
-  for (int i = 0; i < steps; i++) {
+  int stepsAmount = (70400 / 360) * degrees;
+
+  for (int i = 0; i < stepsAmount; i++) {
     do_step(ELEVATION_STEP);
   }
 }
@@ -68,12 +69,12 @@ void rotate_elevation(int steps, Direction direction) {
 void loop() {
   for (int i = 0; i < 360; i++) {
     rotate_azimuth(0.5, RIGHT);
-    rotate_elevation(7, DOWN);
+    rotate_elevation(0.1, DOWN);
   }
   delay(5000);
   for (int i = 0; i < 360; i++) {
     rotate_azimuth(0.5, LEFT);
-    rotate_elevation(7, UP);
+    rotate_elevation(0.1, UP);
   }
   delay(5000);
 }
