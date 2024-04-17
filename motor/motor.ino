@@ -6,6 +6,12 @@ const int AZIMUTH_STEP = 3;
 const int ELEVATION_DIR = 4;
 const int AZIMUTH_DIR = 5;
 
+// Settings
+const int STEPS_PER_CIRCLE = 3200;  // 200 steps per revolution * 16 microsteps
+
+const float AZIMUTH_GEAR_RATIO = 2.5;
+const float ELEVATION_GEAR_RATIO = 22;
+
 typedef enum {
   RIGHT = true,
   LEFT = false,
@@ -15,16 +21,13 @@ typedef enum {
 } Direction;
 
 void setup() {
-  Serial.begin(9600);               // open de serial
-  pinMode(ELEVATION_STEP, OUTPUT);  // step elevation
+  Serial.begin(9600);  // open de serial
+
   pinMode(AZIMUTH_STEP, OUTPUT);    // step azimuth
+  pinMode(ELEVATION_STEP, OUTPUT);  // step elevation
 
-  pinMode(ELEVATION_DIR, OUTPUT);    // elavation direction
-  pinMode(AZIMUTH_DIR, OUTPUT);      // azimuth direction
-  // digitalWrite(ELEVATION_DIR, LOW);  // elavation direction HIGH = omlaag, LOW = omhoog
-  // digitalWrite(AZIMUTH_DIR, HIGH);   // azimuth direction HIGH = rechtsom, LOW = linksom
-
-  delay(1000);
+  pinMode(AZIMUTH_DIR, OUTPUT);    // azimuth direction
+  pinMode(ELEVATION_DIR, OUTPUT);  // elavation direction
 }
 
 void do_step(int pin) {
@@ -34,47 +37,50 @@ void do_step(int pin) {
   delay(1);
 }
 
-void rotate_azimuth(float degrees, Direction direction) {
-  digitalWrite(AZIMUTH_DIR, direction);
+void go_to_relative(float azimuthDegrees, float elevationDegrees) {
+  // Rotate both azimuth and elevation at the same time
+  int azimuthSteps = ((STEPS_PER_CIRCLE * AZIMUTH_GEAR_RATIO) / 360.0) * azimuthDegrees;
+  int elevationSteps = ((STEPS_PER_CIRCLE * ELEVATION_GEAR_RATIO) / 360.0) * elevationDegrees;
 
-  // RIGHT = UP
-  // LEFT = DOWN
-  if (direction == RIGHT) {
-    digitalWrite(ELEVATION_DIR, UP);
-  } else if (direction == LEFT) {
-    digitalWrite(ELEVATION_DIR, DOWN);
-  } 
+  // For every 2.5 azimuth steps, add 1 elevation step in the opposite direction
+  elevationSteps += azimuthSteps / AZIMUTH_GEAR_RATIO;
 
-  int stepsAmount = (8000 / 360) * degrees;
+  // Set direction
+  digitalWrite(AZIMUTH_DIR, azimuthSteps > 0 ? RIGHT : LEFT);   // Positive = right, negative = left
+  digitalWrite(ELEVATION_DIR, elevationSteps > 0 ? UP : DOWN);  // Positive = up, negative = down
 
-  for (int i = 0; i < stepsAmount; i++) {
-    if (i % 5 == 0) {
+  // Absolute value of steps
+  float azimuthStepsAbs = abs(azimuthSteps);
+  float elevationStepsAbs = abs(elevationSteps);
+
+  if (elevationStepsAbs > azimuthStepsAbs) {                        // Elevation is leading, because it has more steps
+    float orignialStepRatio = elevationStepsAbs / azimuthStepsAbs;  // Calculate the ratio between the steps
+
+    while (elevationStepsAbs) {  // While there are still elevation steps to take
       do_step(ELEVATION_STEP);
-      do_step(ELEVATION_STEP);
+      elevationStepsAbs--;
+      if ((elevationStepsAbs / azimuthStepsAbs) < orignialStepRatio) {
+        do_step(AZIMUTH_STEP);  // If the ratio between the steps is less than the original ratio, take an azimuth step
+        azimuthStepsAbs--;
+      }
     }
-    do_step(AZIMUTH_STEP);
-  }
-}
+  } else {  // Azimuth is leading, because it has more steps
+    float orignialStepRatio = azimuthStepsAbs / elevationStepsAbs;
 
-void rotate_elevation(int degrees, Direction direction) {
-  digitalWrite(ELEVATION_DIR, direction);  
-
-  int stepsAmount = (70400 / 360) * degrees;
-
-  for (int i = 0; i < stepsAmount; i++) {
-    do_step(ELEVATION_STEP);
+    while (azimuthStepsAbs) {
+      do_step(AZIMUTH_STEP);
+      azimuthStepsAbs--;
+      if ((azimuthStepsAbs / elevationStepsAbs) < orignialStepRatio) {
+        do_step(ELEVATION_STEP);  // If the ratio between the steps is less than the original ratio, take an elevation step
+        elevationStepsAbs--;
+      }
+    }
   }
 }
 
 void loop() {
-  for (int i = 0; i < 360; i++) {
-    rotate_azimuth(0.5, RIGHT);
-    rotate_elevation(0.1, DOWN);
-  }
+  go_to_relative(180, 45);
   delay(5000);
-  for (int i = 0; i < 360; i++) {
-    rotate_azimuth(0.5, LEFT);
-    rotate_elevation(0.1, UP);
-  }
+  go_to_relative(-180, -45);
   delay(5000);
 }
