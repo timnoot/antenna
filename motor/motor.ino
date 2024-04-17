@@ -91,8 +91,8 @@ void go_to(float azimuthDegrees, float elevationDegrees, int breakAfterSeconds =
     Serial.println("Invalid coordinates");
     return;
   }
-  // if within 1 degree of the current position, don't move
-  if (abs(azimuthDegrees - absoluteAzimuthDegrees) < 1 && abs(elevationDegrees - absoluteElevationDegrees) < 1) {
+  // if within 0.1 degree of the current position, don't move
+  if (abs(azimuthDegrees - absoluteAzimuthDegrees) < 0.1 && abs(elevationDegrees - absoluteElevationDegrees) < 0.1) {
     return;
   }
   go_to_relative(azimuthDegrees - absoluteAzimuthDegrees, elevationDegrees - absoluteElevationDegrees, breakAfterSeconds);
@@ -120,7 +120,7 @@ String getValue(String arduinoStr, String key) {
   return arduinoStr.substring(valueIndex, nextDelimiterIndex);
 }
 
-void loop() {
+void updatePosition() {
   if (Serial.available() > 0) {
     String arduinoStr = Serial.readString();
     String azimuthStr = getValue(arduinoStr, "az");    // Azimuth
@@ -131,7 +131,9 @@ void loop() {
     String satteliteStr = getValue(arduinoStr, "sa");  // Sattelite name
     // keep checking for new data while moving
 
-    go_to(azimuth, elevation, 2);
-    // delay(5000);
+    go_to(azimuth, elevation, 2);  // Break after 2 seconds to check for new data
   }
+}
+
+void loop() {
 }
