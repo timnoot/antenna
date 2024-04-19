@@ -2,4 +2,5 @@ requests
 kivy
 aiohttp
 aioserial
+pyserial
 plyer

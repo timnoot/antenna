@@ -6,6 +6,8 @@ const int AZIMUTH_STEP = 3;
 const int ELEVATION_DIR = 4;
 const int AZIMUTH_DIR = 5;
 
+const int ELEVATION_ENDSWITCH = 9;
+
 // Settings
 const int STEPS_PER_CIRCLE = 3200;  // 200 steps per revolution * 16 microsteps
 
@@ -33,14 +35,14 @@ void setup() {
   pinMode(AZIMUTH_DIR, OUTPUT);    // azimuth direction
   pinMode(ELEVATION_DIR, OUTPUT);  // elavation direction
 
-  set_zero_points();
+  pinMode(ELEVATION_ENDSWITCH, INPUT_PULLUP);  // Elevation endswitch
 }
 
-void do_step(int pin) {
+void do_step(int pin, int speed = 500) {
   digitalWrite(pin, HIGH);
-  delayMicroseconds(500);
+  delayMicroseconds(speed);
   digitalWrite(pin, LOW);
-  delayMicroseconds(500);
+  delayMicroseconds(speed);
 }
 
 void go_to_relative(float azimuthDegrees, float elevationDegrees, int breakAfterSeconds = 60) {
@@ -87,10 +89,10 @@ void go_to_relative(float azimuthDegrees, float elevationDegrees, int breakAfter
 }
 
 void go_to(float azimuthDegrees, float elevationDegrees, int breakAfterSeconds = 60) {
-  if (azimuthDegrees < 0 || azimuthDegrees > 360 || elevationDegrees < -10 || elevationDegrees > 90) {
-    Serial.println("Invalid coordinates");
-    return;
-  }
+  // if (azimuthDegrees < 0 || azimuthDegrees > 360 || elevationDegrees < -10 || elevationDegrees > 90) {
+  //   Serial.println("Invalid coordinates");
+  //   return;
+  // }
   // if within 0.1 degree of the current position, don't move
   if (abs(azimuthDegrees - absoluteAzimuthDegrees) < 0.1 && abs(elevationDegrees - absoluteElevationDegrees) < 0.1) {
     return;
@@ -115,14 +117,27 @@ String getValue(String arduinoStr, String key) {
   return arduinoStr.substring(valueIndex, nextDelimiterIndex);
 }
 
+void set_zero_points() {
+  // Find zero point for elevation
+  digitalWrite(ELEVATION_DIR, DOWN);
+  while (digitalRead(ELEVATION_ENDSWITCH) == 0) {
+    do_step(ELEVATION_STEP, 250);
+  }
+  go_to_relative(0, 10);
+
+  digitalWrite(ELEVATION_DIR, DOWN);
+  while (digitalRead(ELEVATION_ENDSWITCH) == 0) {
+    do_step(ELEVATION_STEP, 2000);
+  }
+
+  go_to_relative(0, 8);
+  absoluteElevationDegrees = 0;
+}
+
 void readSerial() {
   if (Serial.available() > 0) {
     String arduinoStr = Serial.readString();
     int opCode = getValue(arduinoStr, "op").toInt();
-    // 0 = position
-    // 1 = set azimuth 0
-    // 2 = set elevation 0
-    // 3 = move azimuth and elevation to x
 
     if (opCode == 0) {
       String azimuthStr = getValue(arduinoStr, "az");    // Azimuth
@@ -142,15 +157,12 @@ void readSerial() {
       float elevation = elevationStr.toFloat();
 
       go_to(azimuth, elevation, 60);  // Break after 60 seconds to check for new data
+    } else if (opCode == 4) {
+      set_zero_points();
     }
   }
 }
 
-void set_zero_points() {
-  int azimuthDegrees = 0;
-  int elevationDegrees = 0;
-  // to be continued
-}
 
 void loop() {
   readSerial();

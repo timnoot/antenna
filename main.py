@@ -1,6 +1,8 @@
 import time
 import aiohttp
 import aioserial
+import serial.tools.list_ports
+
 import asyncio
 from logging import getLogger
 
@@ -34,7 +36,9 @@ SATELLITES = [
     {"name": "NOAA 15", "norad_id": 25338},
     {"name": "STarlink", "norad_id": 45684},
     {"name": "ISS", "norad_id": 25544},
+    {"name": "NOAA 20", "norad_id": 43013},
 ]
+
 
 
 class CustomPopup(Popup):
@@ -53,7 +57,9 @@ class Client(App):
     NORAD_ID = 33591
     LATITUDE = 52.019100
     LONGITUDE = 4.429700
-    COM_PORT = "COM7"
+
+    PORTS = [port.device for port in serial.tools.list_ports.comports()]
+    COM_PORT = PORTS[0] if len(PORTS) == 1 else None
 
     other_task = None
 
@@ -64,6 +70,7 @@ class Client(App):
     1 = set azimuth 0
     2 = set elevation 0
     3 = move azimuth and elevation to x
+    4 = find zero position
     """
 
     def __init__(self, _loop=None):
@@ -81,6 +88,8 @@ class Client(App):
         self.elevation_input = None
         self.azimuth_label = None
         self.elevation_label = None
+
+        self.tracking_button = None
 
     async def init(self):
         try:
@@ -102,18 +111,17 @@ class Client(App):
         self.send_position = not self.send_position
         # change the color of the button
         if self.send_position:
-            instance.background_color = (1, 0, 0, 1)
-            instance.text = "Stop sending position"
+            self.tracking_button.background_color = (1, 0, 0, 1)
+            self.tracking_button.text = "Stop sending position"
         else:
-            instance.background_color = (0, 1, 0, 1)
-            instance.text = "Start sending position"
+            self.tracking_button.background_color = (0, 1, 0, 1)
+            self.tracking_button.text = "Start sending position"
 
     def select_satellite(self, instance):
         for satellite in SATELLITES:
             if satellite["name"] == instance.text:
                 self.NORAD_ID = satellite["norad_id"]
                 break
-        pass
 
     def move_antenna(self, instance):
         # get the azimuth and elevation from the input fields
@@ -153,14 +161,59 @@ class Client(App):
         self.elevation_input.text = "0"
         self.update_coordinates()
 
+    def find_zero_position(self, instance):
+        asyncio.ensure_future(self.write_arduino({
+            "op": "4"
+        }))
+        CustomPopup(title="Zero position", message="Finding zero position").open()
+        self.elevation = 0
+        self.elevation_input.text = "0"
+        self.update_coordinates()
+
+    def select_com_port(self, instance):
+        for port in self.PORTS:
+            if port == instance.text:
+                self.arduino.close()
+
+                self.COM_PORT = port
+                self.arduino = aioserial.AioSerial(port=self.COM_PORT, baudrate=9600)
+                self.logger.info(f"Selected port: {self.COM_PORT}")
+                break
+
     def build(self):
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10, size_hint=(None, None), size=(500, 400))
 
-        # Button to send position
-        position_send_button = Button(text='Start sending position', size_hint_y=None, height=40,
-                                      background_color=(0, 1, 0, 1))
-        position_send_button.bind(on_press=self.on_position_send_button)
-        layout.add_widget(position_send_button)
+        # Show serial ports
+        input_layout = GridLayout(cols=2, spacing=10, size_hint_y=None)
+        input_layout.bind(minimum_height=input_layout.setter('height'))
+
+        com_port_label = Label(text=f'Select COM port', size_hint=(None, None), size=(200, 40), halign='right')
+        input_layout.add_widget(com_port_label)
+
+        r = [port.device for port in serial.tools.list_ports.comports()]
+        if len(r) == 0:
+            CustomPopup(title="Error", message="No serial ports found").open()
+            self.logger.error("No serial ports found")
+
+        dropdown1 = DropDown()
+        for port in r:
+            btn = Button(text=port, size_hint_y=None, height=40, background_color=(1, 1, 1, 1))
+            btn.bind(on_release=lambda btn: dropdown1.select(btn.text))
+            btn.bind(on_release=self.select_com_port)
+            dropdown1.add_widget(btn)
+
+        select_port_button = Button(text=self.COM_PORT if self.COM_PORT else "Select port", size_hint_y=None, height=40,
+                                    background_color=(0, 0.7, 0.7, 1))
+        select_port_button.bind(on_release=lambda btn: dropdown1.open(select_port_button))
+        dropdown1.bind(on_select=lambda instance, x: setattr(select_port_button, 'text', x))
+        input_layout.add_widget(select_port_button)
+
+        layout.add_widget(input_layout)
+
+        # Button to find zero point
+        zero_button = Button(text='Find zero point', size_hint_y=None, height=40, background_color=(1, 1, 0, 1))
+        zero_button.bind(on_press=self.find_zero_position)
+        layout.add_widget(zero_button)
 
         # Dropdown for selecting satellites
         dropdown = DropDown()
@@ -175,6 +228,12 @@ class Client(App):
         select_satellite_button.bind(on_release=dropdown.open)
         dropdown.bind(on_select=lambda instance, x: setattr(select_satellite_button, 'text', x))
         layout.add_widget(select_satellite_button)
+
+        # Button to send position
+        self.tracking_button = Button(text='Start sending position', size_hint_y=None, height=40,
+                                      background_color=(0, 1, 0, 1))
+        self.tracking_button.bind(on_press=self.on_position_send_button)
+        layout.add_widget(self.tracking_button)
 
         # Input layout
         input_layout = GridLayout(cols=3, spacing=10, size_hint_y=None)
@@ -233,7 +292,13 @@ class Client(App):
             }
 
     async def write_arduino(self, x):
-        await self.arduino.write_async(self.to_arduino_format(x).encode())
+        try:
+            await self.arduino.write_async(self.to_arduino_format(x).encode())
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error("Arduino not found")
+            # put a popup ontop
+            CustomPopup(title="Error", message="Arduino not found").open()
 
     @staticmethod
     def to_arduino_format(json_data):
@@ -249,13 +314,23 @@ class Client(App):
 
         while True:
             if time.time() - start > 1 and self.send_position:
+                start = time.time()
+
                 r = await self.get_satellite_location(self.NORAD_ID, self.LATITUDE, self.LONGITUDE)
+                if r["el"] < -5:
+                    CustomPopup(title="Error", message=f"Elevation is too low\naz={r['az']}°, el={r['el']}°").open()
+                    self.logger.error("Elevation is too low")
+                    self.send_position = False
+                    self.tracking_button.background_color = (0, 1, 0, 1)
+                    self.tracking_button.text = "Start sending position"
+                    continue
+
                 await self.write_arduino(r)
 
                 self.azimuth = r["az"]
                 self.elevation = r["el"]
+
                 self.update_coordinates()
-                start = time.time()
 
             await asyncio.sleep(0.1)
 
