@@ -43,7 +43,7 @@ SATELLITES = [
 
 class CustomPopup(Popup):
     def __init__(self, title, message, **kwargs):
-        super(CustomPopup, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.title = title
         self.size_hint = (None, None)
         self.size = (400, 200)
