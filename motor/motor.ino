@@ -115,18 +115,34 @@ String getValue(String arduinoStr, String key) {
   return arduinoStr.substring(valueIndex, nextDelimiterIndex);
 }
 
-void updatePosition() {
+void readSerial() {
   if (Serial.available() > 0) {
     String arduinoStr = Serial.readString();
-    String azimuthStr = getValue(arduinoStr, "az");    // Azimuth
-    String elevationStr = getValue(arduinoStr, "el");  // Elevation
-    float azimuth = azimuthStr.toFloat();
-    float elevation = elevationStr.toFloat();
+    int opCode = getValue(arduinoStr, "op").toInt();
+    // 0 = position
+    // 1 = set azimuth 0
+    // 2 = set elevation 0
+    // 3 = move azimuth and elevation to x
 
-    String satteliteStr = getValue(arduinoStr, "sa");  // Sattelite name
-    // keep checking for new data while moving
+    if (opCode == 0) {
+      String azimuthStr = getValue(arduinoStr, "az");    // Azimuth
+      String elevationStr = getValue(arduinoStr, "el");  // Elevation
+      float azimuth = azimuthStr.toFloat();
+      float elevation = elevationStr.toFloat();
 
-    go_to(azimuth, elevation, 2);  // Break after 2 seconds to check for new data
+      go_to(azimuth, elevation, 60);  // Break after 2 seconds to check for new data
+    } else if (opCode == 1) {
+      absoluteAzimuthDegrees = 0;
+    } else if (opCode == 2) {
+      absoluteElevationDegrees = 0;
+    } else if (opCode == 3) {
+      String azimuthStr = getValue(arduinoStr, "az");    // Azimuth
+      String elevationStr = getValue(arduinoStr, "el");  // Elevation
+      float azimuth = azimuthStr.toFloat();
+      float elevation = elevationStr.toFloat();
+
+      go_to(azimuth, elevation, 60);  // Break after 60 seconds to check for new data
+    }
   }
 }
 
@@ -137,6 +153,5 @@ void set_zero_points() {
 }
 
 void loop() {
-  go_to(360, 0);
-  delay(5000);
+  readSerial();
 }
