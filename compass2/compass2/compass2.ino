@@ -9,7 +9,7 @@ void setup() {
   Serial.begin(9600);
   // 90.00:-1470.00:-594:359:-1726:0:-1271:0:-117:-863:-635
   // calibration values for HMC5883L
-  compass.setOffset(-139, -779, -602);
+  // compass.setOffset(-139, -779, -602);
 
   // Initialize HMC5883L
   Serial.println("Initialize HMC5883L");
@@ -40,8 +40,8 @@ void loop() {
   // Min & Max X = -255 240 middle= -7.5
   // Min & Max Y = -690 -333 middle = -511.5
   // make the values have the same range at the top and bottom
-  float compensatedX = norm.XAxis + 7.5;
-  float compensatedY = norm.YAxis + 511.5;
+  float compensatedX = norm.XAxis; //+ 7.5;
+  float compensatedY = norm.YAxis; //+ 511.5;
   Serial.print("X = ");
   Serial.print(compensatedX);
 

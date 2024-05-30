@@ -34,11 +34,10 @@ SATELLITES = [
     {"name": "NOAA 18", "norad_id": 28654},
     {"name": "NOAA 17", "norad_id": 27453},
     {"name": "NOAA 15", "norad_id": 25338},
-    {"name": "STarlink", "norad_id": 45684},
+    # {"name": "", "norad_id": 45684},
     {"name": "ISS", "norad_id": 25544},
     {"name": "NOAA 20", "norad_id": 43013},
 ]
-
 
 
 class CustomPopup(Popup):
@@ -84,11 +83,15 @@ class Client(App):
         self.azimuth = 0
         self.elevation = 0
 
+        # UI elements
+        self.layout = None
+
         self.azimuth_input = None
         self.elevation_input = None
         self.azimuth_label = None
         self.elevation_label = None
 
+        self.dropdown1 = None
         self.tracking_button = None
 
     async def init(self):
@@ -176,12 +179,36 @@ class Client(App):
                 self.arduino.close()
 
                 self.COM_PORT = port
-                self.arduino = aioserial.AioSerial(port=self.COM_PORT, baudrate=9600)
+                try:
+                    self.arduino = aioserial.AioSerial(port=self.COM_PORT, baudrate=9600)
+                except Exception as e:
+                    self.logger.error(f"Arduino not found {e}")
+                    CustomPopup(title="Error", message="Arduino not found").open()
+                    self.COM_PORT = None
+                    return
                 self.logger.info(f"Selected port: {self.COM_PORT}")
                 break
 
+    def update_comports(self):
+        self.PORTS = [port.device for port in serial.tools.list_ports.comports()]
+        if len(self.PORTS) == 0:
+            CustomPopup(title="Error", message="No serial ports found").open()
+            self.logger.error("No serial ports found")
+            self.COM_PORT = None
+
+        # update the dropdown in the layout
+        self.dropdown1.clear_widgets()
+        for port in self.PORTS:
+            btn = Button(text=port, size_hint_y=None, height=40, background_color=(1, 1, 1, 1))
+            btn.bind(on_release=lambda btn: self.dropdown1.select(btn.text))
+            btn.bind(on_release=self.select_com_port)
+            self.dropdown1.add_widget(btn)
+
     def build(self):
-        layout = BoxLayout(orientation='vertical', padding=10, spacing=10, size_hint=(None, None), size=(500, 400))
+        self.title = 'Antenna Tracking Software LiS - v1.0'
+        self.icon = 'icon.png'
+
+        self.layout = BoxLayout(orientation='vertical', padding=10, spacing=10, size_hint=(None, None), size=(500, 400))
 
         # Show serial ports
         input_layout = GridLayout(cols=2, spacing=10, size_hint_y=None)
@@ -191,29 +218,30 @@ class Client(App):
         input_layout.add_widget(com_port_label)
 
         r = [port.device for port in serial.tools.list_ports.comports()]
-        if len(r) == 0:
-            CustomPopup(title="Error", message="No serial ports found").open()
-            self.logger.error("No serial ports found")
 
-        dropdown1 = DropDown()
+        self.dropdown1 = DropDown()
         for port in r:
             btn = Button(text=port, size_hint_y=None, height=40, background_color=(1, 1, 1, 1))
-            btn.bind(on_release=lambda btn: dropdown1.select(btn.text))
+            btn.bind(on_release=lambda btn: self.dropdown1.select(btn.text))
             btn.bind(on_release=self.select_com_port)
-            dropdown1.add_widget(btn)
+            self.dropdown1.add_widget(btn)
 
         select_port_button = Button(text=self.COM_PORT if self.COM_PORT else "Select port", size_hint_y=None, height=40,
                                     background_color=(0, 0.7, 0.7, 1))
-        select_port_button.bind(on_release=lambda btn: dropdown1.open(select_port_button))
-        dropdown1.bind(on_select=lambda instance, x: setattr(select_port_button, 'text', x))
+        # select_port_button.bind(on_release=lambda btn: dropdown1.open(select_port_button))
+        # first run the update_comports function and then open the dropdown
+        select_port_button.bind(
+            on_release=lambda btn: [self.update_comports(), self.dropdown1.open(select_port_button)])
+
+        self.dropdown1.bind(on_select=lambda instance, x: setattr(select_port_button, 'text', x))
         input_layout.add_widget(select_port_button)
 
-        layout.add_widget(input_layout)
+        self.layout.add_widget(input_layout)
 
         # Button to find zero point
         zero_button = Button(text='Find zero point', size_hint_y=None, height=40, background_color=(1, 1, 0, 1))
         zero_button.bind(on_press=self.find_zero_position)
-        layout.add_widget(zero_button)
+        self.layout.add_widget(zero_button)
 
         # Dropdown for selecting satellites
         dropdown = DropDown()
@@ -227,13 +255,13 @@ class Client(App):
                                          background_color=(0, 0.7, 0.7, 1))
         select_satellite_button.bind(on_release=dropdown.open)
         dropdown.bind(on_select=lambda instance, x: setattr(select_satellite_button, 'text', x))
-        layout.add_widget(select_satellite_button)
+        self.layout.add_widget(select_satellite_button)
 
         # Button to send position
         self.tracking_button = Button(text='Start sending position', size_hint_y=None, height=40,
                                       background_color=(0, 1, 0, 1))
         self.tracking_button.bind(on_press=self.on_position_send_button)
-        layout.add_widget(self.tracking_button)
+        self.layout.add_widget(self.tracking_button)
 
         # Input layout
         input_layout = GridLayout(cols=3, spacing=10, size_hint_y=None)
@@ -242,8 +270,9 @@ class Client(App):
         self.azimuth_label = Label(text=f'Azimuth: {self.azimuth}', size_hint=(None, None), size=(120, 40),
                                    halign='right')
         input_layout.add_widget(self.azimuth_label)
+        # make it 0 by default
         self.azimuth_input = TextInput(hint_text='Enter azimuth', multiline=False, size_hint=(None, None),
-                                       size=(200, 40))
+                                       size=(200, 40), input_filter='int', text='0')
         input_layout.add_widget(self.azimuth_input)
 
         azimuth_set_0_button = Button(text='Set 0', size_hint_y=None, height=40, background_color=(1, 1, 1, 1))
@@ -254,21 +283,21 @@ class Client(App):
                                      halign='right')
         input_layout.add_widget(self.elevation_label)
         self.elevation_input = TextInput(hint_text='Enter elevation', multiline=False, size_hint=(None, None),
-                                         size=(200, 40))
+                                         size=(200, 40), input_filter='int', text='0')
         input_layout.add_widget(self.elevation_input)
 
         elevation_set_0_button = Button(text='Set 0', size_hint_y=None, height=40, background_color=(1, 1, 1, 1))
         elevation_set_0_button.bind(on_press=self.elevation_set_0)
         input_layout.add_widget(elevation_set_0_button)
 
-        layout.add_widget(input_layout)
+        self.layout.add_widget(input_layout)
 
         # Button to move antenna
         move_button = Button(text='Move antenna', size_hint_y=None, height=40, background_color=(0, 0.7, 0.7, 1))
         move_button.bind(on_press=self.move_antenna)
-        layout.add_widget(move_button)
+        self.layout.add_widget(move_button)
 
-        return layout
+        return self.layout
 
     async def get_satellite_location(self, norad_id, latitude, longitude) -> dict:
         async with self.session.get(
