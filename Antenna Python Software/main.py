@@ -380,6 +380,12 @@ class Client(App):
 
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(Client(loop).startup())
-    loop.close()
+    try:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(Client(loop).startup())
+        loop.close()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    except Exception as e:
+        print("Error", e)
+
