@@ -2,9 +2,12 @@ import time
 import aiohttp
 import aioserial
 import serial.tools.list_ports
-
+import os
+from itertools import cycle
+import requests
 import asyncio
 from logging import getLogger
+import json
 
 from kivy.app import App
 from kivy.uix.button import Button
@@ -51,11 +54,65 @@ class CustomPopup(Popup):
         self.content = self.label
 
 
+class SetLatLongPopup(Popup):
+    def __init__(self, estimated_lat=0, estimated_long=0, **kwargs):
+        super().__init__(**kwargs)
+        self.title = "Configure latitude and longitude"
+        self.size_hint = (None, None)
+        self.size = (450, 250)
+
+        self.layout = BoxLayout(orientation='vertical', padding=10, spacing=10, size_hint=(None, None), size=(400, 400))
+
+        # Input layout
+        input_layout = GridLayout(cols=2, spacing=10, size_hint_y=None)
+        input_layout.bind(minimum_height=input_layout.setter('height'))
+
+        self.latitude_input = TextInput(
+            hint_text='Enter latitude', multiline=False, size_hint=(None, None), size=(180, 40), input_filter='float',
+            text=str(estimated_lat) if estimated_lat else ""
+        )
+        input_layout.add_widget(Label(text="Latitude"))
+        input_layout.add_widget(self.latitude_input)
+
+        self.longitude_input = TextInput(
+            hint_text='Enter longitude', multiline=False, size_hint=(None, None), size=(180, 40), input_filter='float',
+            text=str(estimated_long) if estimated_long else ""
+        )
+        input_layout.add_widget(Label(text="Longitude"))
+        input_layout.add_widget(self.longitude_input)
+
+        self.layout.add_widget(input_layout)
+
+        # Button to set latitude and longitude
+        set_button = Button(text='Set', size_hint_y=None, height=40, background_color=(0, 0.7, 0.7, 1))
+        set_button.bind(on_press=self.set_lat_long)
+        self.layout.add_widget(set_button)
+
+        self.content = self.layout
+
+    def set_lat_long(self, instance):
+        try:
+            lat = float(self.latitude_input.text)
+            long = float(self.longitude_input.text)
+        except ValueError:
+            CustomPopup(title="Error", message="Latitude and longitude must be floats").open()
+            return
+
+        with open("settings.json", "w") as f:
+            json.dump({
+                "LATITUDE": lat,
+                "LONGITUDE": long
+            }, f)
+
+        self.dismiss()
+
+
 class Client(App):
-    API_KEY = "8HB8G9-HQZ5J3-XXPTVU-58JL"
-    NORAD_ID = 33591
-    LATITUDE = 52.019100
-    LONGITUDE = 4.429700
+    API_KEYS = cycle([
+        "CKN6RH-VHFY63-3CWULX-59R0",
+        "8HB8G9-HQZ5J3-XXPTVU-58JL",
+        "P2N6P2-CPVNLR-F7R727-59R1"
+    ])
 
     PORTS = [port.device for port in serial.tools.list_ports.comports()]
     COM_PORT = PORTS[0] if len(PORTS) == 1 else None
@@ -78,6 +135,13 @@ class Client(App):
         self.session: aiohttp.ClientSession = None
         self.loop: asyncio.AbstractEventLoop = _loop
         self.logger = getLogger('kivy')
+
+        with open("settings.json", "r") as f:
+            settings = json.load(f)
+            self.LATITUDE = settings["LATITUDE"]
+            self.LONGITUDE = settings["LONGITUDE"]
+
+        self.NORAD_ID = None
 
         self.send_position = False
         self.azimuth = 0
@@ -111,6 +175,11 @@ class Client(App):
         self.elevation_label.text = f'Elevation: {self.elevation}'
 
     def on_position_send_button(self, instance):
+        if self.COM_PORT is None or self.NORAD_ID is None:
+            CustomPopup(title="Error", message="Select COM port and satellite first").open()
+            self.logger.error("Select COM port and satellite first")
+            return
+
         self.send_position = not self.send_position
         # change the color of the button
         if self.send_position:
@@ -301,7 +370,7 @@ class Client(App):
 
     async def get_satellite_location(self, norad_id, latitude, longitude) -> dict:
         async with self.session.get(
-                f"https://api.n2yo.com/rest/v1/satellite/positions/{norad_id}/{latitude}/{longitude}/0/2/?apiKey={self.API_KEY}"
+                f"https://api.n2yo.com/rest/v1/satellite/positions/{norad_id}/{latitude}/{longitude}/0/2/?apiKey={next(self.API_KEYS)}"
         ) as response:
             res = await response.json()
             """
@@ -319,6 +388,11 @@ class Client(App):
                 "az": azimuth,
                 "el": elevation
             }
+
+    async def get_estimated_lat_long(self):
+        async with self.session.get("https://ipapi.co/json") as response:
+            res = await response.json()
+            return res["latitude"], res["longitude"]
 
     async def write_arduino(self, x):
         try:
@@ -340,6 +414,11 @@ class Client(App):
         self.logger.info("Starting main")
         await self.init()
         start = time.time()
+
+        if self.LATITUDE is None or self.LONGITUDE is None:
+            await asyncio.sleep(0.1)
+            lat, long = await self.get_estimated_lat_long()
+            SetLatLongPopup(lat, long).open()
 
         while True:
             if time.time() - start > 1 and self.send_position:
@@ -380,6 +459,19 @@ class Client(App):
 
 
 if __name__ == '__main__':
+    if not os.path.exists("icon.png"):  # check if icon.png exists
+        print("icon.png not found downloading from github")
+        r = requests.get("https://raw.githubusercontent.com/timnoot/antenna/main/Antenna%20Python%20Software/icon.png")
+        with open("icon.png", "wb") as f:
+            f.write(r.content)
+
+    if not os.path.exists("settings.json"):
+        with open("settings.json", "w") as f:
+            json.dump({
+                "LATITUDE": None,
+                "LONGITUDE": None
+            }, f)
+
     try:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(Client(loop).startup())
@@ -388,4 +480,3 @@ if __name__ == '__main__':
         pass
     except Exception as e:
         print("Error", e)
-
