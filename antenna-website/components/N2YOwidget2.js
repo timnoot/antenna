@@ -1,5 +1,11 @@
 import { useEffect } from 'react';
 import axios from 'axios';
+import Script from 'next/script';
+
+// import * as L from 'react-leaflet';
+// import "leaflet/dist/leaflet.css"
+
+
 
 const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 	// window.onload = initialize;
@@ -540,12 +546,11 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 	}
 
 
-
 	return (
 		<div>
-			<script src="./js/leaflet/leaflet.js" type="text/javascript"></script>
-			<script src="./js/leaflet/L.Terminator.js" type="text/javascript"></script>
-			<script src="./js/satellite-js/dist/satellite.min.js"></script>
+			<script src="./js/leaflet/leaflet.js" type="text/javascript" />
+			<script src="./js/leaflet/L.Terminator.js" type="text/javascript" />
+			<script src="./js/satellite-js/dist/satellite.min.js" />
 			<link rel="stylesheet" href="./js/leaflet/leaflet.css" />
 			<div id="n2yo_satmap1">
 			</div>

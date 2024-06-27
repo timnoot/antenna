@@ -25,7 +25,6 @@ export default function Control() {
                 // change the src of the iframe
                 n2yo_iframe.src = `https://www.n2yo.com/widgets/widget-tracker.php?s=${e.target.value}&size=medium&all=1&me=5&map=5&foot=1`;
 
-
             }}>
                 {SATELLITES.map(s => <option key={s.norad_id} value={s.norad_id}>{s.name}</option>)}
             </select>
