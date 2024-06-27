@@ -1,5 +1,5 @@
-import N2YOwidget from "../components/N2YOwidget";
-import { useEffect } from 'react';
+import SatMap from "../components/SatMap";
+import { useEffect, useRef, useState } from 'react';
 
 const SATELLITES = [
     { "name": "NOAA 19", "norad_id": 33591 },
@@ -12,28 +12,33 @@ const SATELLITES = [
 
 
 export default function Control() {
-    const norard_id_string = SATELLITES.map(s => `${s.norad_id}|${s.name}`).join(',');
+    const [norad_id, setNorad_id] = useState(33591);
+    const [satname, setSatname] = useState('NOAA 19');
+    const [azimuth, setAzimuth] = useState(0);
+    const [elevation, setElevation] = useState(0);
 
     return (
-        <div className='grid-cols-3 text-center'>
-            <h1 className='text-4xl my-8'>Control Page</h1>
-            <select className='m-4 bg-primary' onChange={(e) => {
-                console.log(e.target.value);
-                // execute code in console
-                // window.eval('const mySelect = document.getElementById("n2yo_iframe");console.log(mySelect);')
-                const n2yo_iframe = document.getElementById('n2yo_iframe');
-                // change the src of the iframe
-                n2yo_iframe.src = `https://www.n2yo.com/widgets/widget-tracker.php?s=${e.target.value}&size=medium&all=1&me=5&map=5&foot=1`;
+        <div className='flex flex-col items-center'>
+            <h1 className='text-4xl mt-8'>Control Page</h1>
+            <div className='flex w-full justify-between'>
+                <div className='flex flex-col items-center w-[600px] min-w-[300px] ml-6'>
+                    <select className=' bg-secondary border-2 border-border hover:brightness-125 text-3xl rounded-xl' onChange={(e) => {
+                        setNorad_id(e.target.value);
+                        setSatname(SATELLITES.find(s => s.norad_id === parseInt(e.target.value)).name);
+                    }}>
+                        {SATELLITES.map(s => <option key={s.norad_id} value={s.norad_id}>{s.name}</option>)}
+                    </select>
 
-            }}>
-                {SATELLITES.map(s => <option key={s.norad_id} value={s.norad_id}>{s.name}</option>)}
-            </select>
+                    <div className='w-full m-4'>
+                        <SatMap norad_id={norad_id} satname={satname} setAzimuth={setAzimuth} setElevation={setElevation} />
+                    </div>
+                </div>
 
-            <div className='bg-white w-min m-4'>
-                <N2YOwidget norad_id={norard_id_string} width='600' height='463' />
+                <div className='flex flex-col items-center space-y-4'>
+                    <
+                </div>
             </div>
         </div>
     );
 }
-
 

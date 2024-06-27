@@ -9,7 +9,6 @@ const NavigationBar = () => {
 					Welcome to the NOA Satellite Tracker Website
 				</h1>
 			</Link>
-
 			<Link href="/" className="fixed left-2 top-0">
 				<Image
 					src="/satellite.svg"

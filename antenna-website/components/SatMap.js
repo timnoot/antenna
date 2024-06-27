@@ -1,100 +1,50 @@
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Script from 'next/script';
+import EmojiComponent from './EmojiComponent';
 
-// import * as L from 'react-leaflet';
-// import "leaflet/dist/leaflet.css"
+var map1;
+var intervalObject;
+var minelevation = '5';
+var showFootprint = '1';
+var sunOverlay;
+var drawingOverlayArray = [];
+var counter = 0;
+var mrk1;
+var step;
+var tleArray = new Array();
+var myLat = '';
+var myLng = '';
+var footPrint;
 
+const SatMap = ({ norad_id, satname, setAzimuth, setElevation }, ref) => {
+	const [oldNoradId, setOldNoradId] = useState(norad_id);
+	const [passTable, setPassTable] = useState(null);
 
-
-const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
-	// window.onload = initialize;
 	useEffect(() => {
 		console.log("Initializing N2YO widget")
-
 		initialize();
-
-		if (!isNaN(noradstring)) {
-			norad = noradstring;
-		}
-		else {
-			sel = document.createElement("select");
-			sel.id = "mySelect";
-			var ss = noradstring.split(",");
-			for (var i = 0; i < ss.length; i++) {
-				var option = document.createElement("option");
-				var sss = ss[i].split("|");
-				option.value = sss[0];
-				option.text = sss[1];
-				option.label = sss[1];
-				sel.appendChild(option);
-				if (i == 0) norad = sss[0];
-			}
-		}
 	}, []);
-	var isCentered = false;
-	var norad;
-	var sel;
-	var noradstring = '33591|NOAA 19,28654|NOAA 18,27453|NOAA 17,25338|NOAA 15,25544|ISS,43013|NOAA 20';
-	var minelevation = '20';
 
-	var showFootprint = '1';
-	var map1;
-	var sunOverlay;
-	var drawingOverlay;
-	var drawingOverlayArray = [];
-	var dayNightOverlay;
-	var counter = 0;
-	var mrk1; var mrk2; var mrk3;
-	var step;
-	var data;
-	var satname;
-	var dArray = new Array();
-	var tleArray = new Array();
-	var altitude;
-	var intervalObject;
-	var viewer;
-	var myip = '';
-	var myLat = '';
-	var myLng = '';
-	var footPrint;
+	useEffect(() => {
+		if (norad_id == oldNoradId) {
+			console.log("Norad ID did not change, returning")
+			return;
+		}
+		setOldNoradId(norad_id);
 
-	var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
+		console.log("Norad ID changed to: " + norad_id);
+		setSatellite(norad_id);
+	}, [norad_id]);
 
 	function initialize() {
-		document.getElementById("n2yo_list_label").style.display = "none";
-
-		if (sel != null) {
-			document.getElementById("n2yo_list").appendChild(sel);
-			document.getElementById("n2yo_list_label").style.display = "block";
-			document.getElementById("mySelect").addEventListener("change", function (event) {
-				norad = this.value;
-				setSatellite(norad);
-			});
-		}
-
-		document.getElementById("n2yo_satmap1").style.width = "600px";
-		document.getElementById("n2yo_satmap1").style.height = "360px";
-		document.getElementById("n2yo_timezone").style.width = "600px";
-		document.getElementById("n2yo_passes").style.width = "600px";
-		document.getElementById("n2yo_passes").style.height = "100px";
-
-
 		var wd = 600;
 		wd = wd - 120;
-		//  <div id="n2yo_overmap" style="position:absolute;top:10px;left:40px;z-index:99;font:10px arial;"></div>
-		document.getElementById("n2yo_overmap").style.position = "absolute";
-		document.getElementById("n2yo_overmap").style.top = "10px";
-		document.getElementById("n2yo_overmap").style.left = wd + "px";
-		document.getElementById("n2yo_overmap").style.zIndex = "9999";
-		document.getElementById("n2yo_overmap").style.font = "12px Arial";
 
-		map1 = L.map('n2yo_satmap1').setView([0, 100], 1);
+		map1 = L.map('satmap1').setView([0, 100], 1);
 		map1.setZoom(2);
 
 		var mapStyle1 = L.tileLayer('https://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
-			attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+			attribution: ''
 		});
 
 		var mapStyle2 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
@@ -102,18 +52,17 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 			maxZoom: 13
 		});
 
-
 		var mapStyle3 = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-			attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+			attribution: ''
 		});
 
 		var mapStyle4 = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
 			maxZoom: 17,
-			attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+			attribution: ''
 		});
 
 		var mapStyle5 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-			attribution: 'Esri'
+			attribution: ''
 		});
 
 		mapStyle5.addTo(map1);
@@ -124,22 +73,12 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 
 		dayNightSun();
 
-		var dtmp = new Date();
-		var tzmin = -dtmp.getTimezoneOffset();
-		var tzh = tzmin / 60;
-		//alert(tzh);
-		let sign = '';
-		if (tzh >= 0) sign = "+";
-		//else sign = "-";
-		document.getElementById("tz").innerHTML = "Local Time: GMT" + sign + tzh;
-
 		axios.get('https://ipapi.co/json')
 			.then(function (response) {
-				myip = response.data.ip;
 				myLat = response.data.latitude;
 				myLng = response.data.longitude;
-				loadData(norad, start);
-				mrk3 = createHomeMarker();
+				loadData(norad_id, start);
+				createHomeMarker();
 			})
 			.catch(function (error) {
 				console.log(error);
@@ -155,18 +94,50 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 	function start(sid) {
 		counter = 0;
 		intervalObject = setInterval(function () { animateSat(sid); }, 1 * 1000); //every second move the satellite
-
-		//setInterval ("loadData(start)", 5*1000); //every 30 minutes retrieve LEO orbital data
 	}
 
+	const formatDate = (date, onlyTime = false) => {
+		let options;
+		if (onlyTime) {
+			const hours = date.getHours().toString().padStart(2, '0'); // Get hours (in 24-hour format) and pad with leading zero if necessary
+			const minutes = date.getMinutes().toString().padStart(2, '0'); // Get minutes and pad with leading zero if necessary
+			return `${hours}:${minutes}`;
+
+		} else {
+			options = {
+				month: 'short', // Short month name (e.g., Jan, Feb, etc.)
+				day: 'numeric', // Day of the month (1 through 31)
+				hour12: false,  // Use 24-hour time format
+				hour: 'numeric', // Hours (0 through 23)
+				minute: '2-digit' // Minutes (00 through 59)
+			};
+		}
+		return `${date.toLocaleDateString('en-US', options)}`;
+	};
+
+	const azimuthToCompass = (azimuth) => {
+		if (azimuth >= 0 && azimuth < 22.5) return 'N';
+		if (azimuth >= 22.5 && azimuth < 67.5) return 'NE';
+		if (azimuth >= 67.5 && azimuth < 112.5) return 'E';
+		if (azimuth >= 112.5 && azimuth < 157.5) return 'SE';
+		if (azimuth >= 157.5 && azimuth < 202.5) return 'S';
+		if (azimuth >= 202.5 && azimuth < 247.5) return 'SW';
+		if (azimuth >= 247.5 && azimuth < 292.5) return 'W';
+		if (azimuth >= 292.5 && azimuth < 337.5) return 'NW';
+		if (azimuth >= 337.5) return 'N';
+	};
+
 	function loadData(sid, callback) {
+		if (map1 == null) {
+			alert("Map not initialized");
+			return;
+		}
+
 		console.log("Loading data for satellite " + sid);
 		mrk1 = createSatelliteMarker(sid);
 		mrk1.addTo(map1);
 
 		mrk1._icon.style.display = 'none';
-		document.getElementById("n2yo_overmap").innerHTML = "Loading...";
-
 
 		var urls = 'https://api.allorigins.win/raw?url=https://www.n2yo.com/sat/gettle.php?s=' + sid;
 		axios.get(urls)
@@ -179,7 +150,7 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 					let orbitTime = 2 * Math.PI * Math.sqrt(Math.pow(Spos.altitude + 6378.135, 3) / 398600.8);
 					console.log("Orbit time: " + orbitTime + " seconds");
 
-					let stepSize = 100;
+					let stepSize = 500;
 					step = Math.floor(orbitTime / stepSize * 1.2);
 					console.log("Step: " + step);
 
@@ -188,7 +159,8 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 					let oldlng = null;
 					let currentDate = new Date();
 					for (let i = 0; i < stepSize; i++) {
-						let secondsToAdd = -25 * step + i * step;
+						// Go 25 percent back and 75 percent forward
+						let secondsToAdd = -(stepSize / 4) * step + i * step;
 						let d = new Date(currentDate.getTime() + secondsToAdd * 1000);
 						let pos = getCurrentPosition(d, sid);
 
@@ -208,6 +180,11 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 					// Find next pass
 					console.log("My lat: " + myLat + " My lng: " + myLng)
 
+					let startDate = new Date();
+					let highestElevationDate = new Date();
+					let endDate = new Date();
+					let lockStartDate = false;
+
 					for (let i = 0; i < 50000; i++) {
 						let d = new Date(currentDate.getTime() + i * 5 * 1000); // 5 seconds per iteration
 						let pos = getCurrentPosition(d, sid);
@@ -216,79 +193,75 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 							let nextPos = getCurrentPosition(new Date(d.getTime() + 5 * 1000), sid);
 							// console.log(pos.elevation, nextPos.elevation);
 							if (nextPos.elevation > pos.elevation) {
+								if (!lockStartDate) {
+									startDate = d;
+									console.log("Start date: " + d);
+									lockStartDate = true;
+								}
 								continue;
 							}
+							highestElevationDate = d;
+
 							console.log("Next pass at " + d);
 							console.log("Elevation: " + pos.elevation);
-							console.log(i);
+							// find end date
+							for (let j = i; j < 50000; j++) {
+								let d2 = new Date(currentDate.getTime() + j * 5 * 1000); // 5 seconds per iteration
+								let pos2 = getCurrentPosition(d2, sid);
+								if (pos2.elevation < minelevation) {
+									endDate = d2;
+									console.log("End date: " + d2);
+									break;
+								}
+							}
 							break;
 						}
 					}
+
+					let startAzimuth = Math.round(getCurrentPosition(startDate, sid).azimuth);
+					let endAzimuth = Math.round(getCurrentPosition(endDate, sid).azimuth);
+
+					setPassTable(
+						<tr className="text-center">
+							<td className="border-border border-2 p-2"><EmojiComponent text={`📅${formatDate(startDate)}, 🧭${startAzimuth}° ${azimuthToCompass(startAzimuth)}`} /></td>
+							<td className="border-border border-2 p-2" ><EmojiComponent text={`🕒${formatDate(highestElevationDate, true)}, 🔭${Math.round(getCurrentPosition(highestElevationDate, sid).elevation)}°`} /></td>
+							<td className="border-border border-2 p-2"><EmojiComponent text={`🕒${formatDate(endDate, true)}, 🧭${endAzimuth}° ${azimuthToCompass(endAzimuth)}`} /></td>
+						</tr>
+					);
 				}
 			});
 
-
-		// 	// var urlp = '';
-		// 	// if (allpasses == '1') urlp = 'https://api.allorigins.win/raw?url=https://www.n2yo.com/sat/allpassesjson.php?s=' + sid + '&me=' + minelevation;
-		// 	// else urlp = 'https://api.allorigins.win/raw?url=https://www.n2yo.com/sat/passesjson.php?s=' + sid;
-
-
-
-		// 	// jQuery.getJSON(urlp, function (data) {
-		// 	// 	if (data != null) {
-		// 	// 		showPasses(data);
-		// 	// 	}
-		// 	// 	else {
-
-		// 	// 	}
-		// 	// });
-		// 	$("#n2yo_passes").html("No visible upcoming passes");
-
-
-		// });
 		callback(sid);
 	}
 
 	function setSatellite(sid) {
+		console.log(sid);
 		clearInterval(intervalObject);
-		//counter = 0;
-		document.getElementById("n2yo_passes").innerHTML = '';
-
 		if (drawingOverlayArray.length >= 0) {
-			$.each(drawingOverlayArray, function (i, val) {
-				map1.removeLayer(drawingOverlayArray[i]);
+			drawingOverlayArray.forEach((val) => {
+				map1.removeLayer(val);
 			});
-
 		}
 
 		if (mrk1 != null) map1.removeLayer(mrk1);
-		//if(mrk2 != null) map1.removeLayer(mrk2);
-		//dArray = null;
-		//document.getElementById("n2yo_satinfo").style.visibility="hidden";
 		loadData(sid, start);
 	}
 
 	function animateSat(sid) {
 		var d = new Date();
 		var cPos = getCurrentPosition(d, sid);
+		setAzimuth(cPos.azimuth);
+		setElevation(cPos.elevation);
 
 		var currPos = new ObjectPosition(sid, new L.latLng(cPos.latitude, cPos.longitude), cPos.altitude, cPos.speed);
 
 		if (currPos != null) {
-			//mrk1.setVisible(true);
-			//mrk2.setVisible(true);
 			if (counter == 0) {
 				map1.setView(currPos.latlng);
 			}
 			mrk1._icon.style.display = 'block';
 			mrk1.setLatLng(currPos.latlng);
-			/*
-			mrk2.setLatLng(currPos.latlng);
-			if(!isCentered){
-				map1.panTo(mrk1.getLatLng());
-				isCentered = true;
-			}
-			*/
+
 			var footPrintOld;
 			if (footPrint != null) {
 				footPrintOld = footPrint;
@@ -314,12 +287,16 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 				var clat = (currPos.latlng).lat;
 				var clng = (currPos.latlng).lng;
 				var calt = currPos.alt;
-				var dir = "";
-				if (calt > altitude) dir = "&uarr;";
-				else dir = "&darr;";
-				altitude = calt;
+
 				var csp = currPos.sp;
-				document.getElementById("n2yo_overmap").innerHTML = satname + "<br>LAT: " + round(clat) + "<br>LNG: " + round(clng) + "<br>ALT: " + round(calt) + " " + dir + "<br>SPD: " + round(csp);
+
+				document.getElementById("lat").innerHTML = round(clat);
+				document.getElementById("long").innerHTML = round(clng);
+				document.getElementById("alt").innerHTML = Math.floor(calt) + "km";
+				document.getElementById("speed").innerHTML = round(csp) + "km/s";
+				document.getElementById("az").innerHTML = round(cPos.azimuth) + "°";
+				document.getElementById("el").innerHTML = round(cPos.elevation) + "°";
+
 			}
 			counter++;
 		}
@@ -397,39 +374,38 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 		return { longitude: longitudeStr, latitude: latitudeStr, altitude: height, speed: velocity, azimuth: azimuth, elevation: elevation };
 	}
 
-	function getSpeed(x1, dx, dy, h) {
-		// calculate speed, as it is not computed correctly on the server
-		var dlat = dx * Math.PI / 180;
-		var dlon = dy * Math.PI / 180;
-		var lat1 = x1 * Math.PI / 180;
-		var lat2 = (x1 + dx) * Math.PI / 180;
-		var a = Math.sin(dlat / 2) * Math.sin(dlat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon / 2) * Math.sin(dlon / 2);
-		var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		var speed = (h + 6378.135) * c;
-		speed = Math.sqrt(398600.8 / (h + 6378.135));
-		return speed;
-	}
+	// function getSpeed(x1, dx, dy, h) {
+	// 	// calculate speed, as it is not computed correctly on the server
+	// 	var dlat = dx * Math.PI / 180;
+	// 	var dlon = dy * Math.PI / 180;
+	// 	var lat1 = x1 * Math.PI / 180;
+	// 	var lat2 = (x1 + dx) * Math.PI / 180;
+	// 	var a = Math.sin(dlat / 2) * Math.sin(dlat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon / 2) * Math.sin(dlon / 2);
+	// 	var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	// 	var speed = (h + 6378.135) * c;
+	// 	speed = Math.sqrt(398600.8 / (h + 6378.135));
+	// 	return speed;
+	// }
 
 	function createSatelliteMarker(id) {
-		var centerWorld = L.latLng(0, 0);
-		var icon = L.icon({
+		let centerWorld = L.latLng(0, 0);
+		let icon = L.icon({
 			iconUrl: './img/sat.png',
 			iconSize: [30, 30], // size of the icon
 		});
 
-		var sMarker1 = L.marker(centerWorld, { icon: icon });
-		return sMarker1;
+		return L.marker(centerWorld, { icon: icon });
 	}
 
 	function createHomeMarker() {
-		var home = L.latLng(myLat, myLng);
+		let home = L.latLng(myLat, myLng);
 
-		var icon = L.icon({
+		let icon = L.icon({
 			iconUrl: './img/dot.gif',
 			iconSize: [7, 7], // size of the icon
 		});
 
-		var sMarker1 = L.marker(home, { icon: icon });
+		let sMarker1 = L.marker(home, { icon: icon });
 		sMarker1.addTo(map1);
 
 		return sMarker1;
@@ -545,27 +521,53 @@ const N2yoWidget2 = ({ norad_id, minelevation_n2yo, width, height }) => {
 		this.sp = d; // m/s
 	}
 
-
 	return (
 		<div>
-			<script src="./js/leaflet/leaflet.js" type="text/javascript" />
-			<script src="./js/leaflet/L.Terminator.js" type="text/javascript" />
-			<script src="./js/satellite-js/dist/satellite.min.js" />
-			<link rel="stylesheet" href="./js/leaflet/leaflet.css" />
-			<div id="n2yo_satmap1">
+			<div id="satmap1" className='w-[600px] h-[360px] z-0' />
+			<div className='w-full bg-primary bg-opacity-80 h-12 -translate-y-12 flex justify-between items-center pr-4'>
+				<div className='grid grid-cols-2 text-sm space-x-2'>
+					<div>
+						<EmojiComponent text="🌐 Latitude: " />
+						<span id='lat'></span>
+					</div>
+					<div>
+						<EmojiComponent text="🌐 Longitude: " />
+						<span id='long'></span>
+					</div>
+					<div>
+						<EmojiComponent text="🛰️ Height: " />
+						<span id='alt'></span>
+					</div>
+					<div>
+						<EmojiComponent text="🚀 Speed: " />
+						<span id='speed'></span>
+					</div>
+				</div>
+				<div>
+					<span className='text-2xl'>{satname}</span>
+				</div>
+				<div className='flex flex-col text-md'>
+					<span><EmojiComponent text="🧭 Azimuth: " /><span id='az'></span></span>
+					<span><EmojiComponent text="🔭 Elevation: " /><span id='el'></span></span>
+				</div>
 			</div>
-			<div id="n2yo_overmap"></div>
-			<div id="n2yo_timezone">
-				<span className='float-left'></span>
-				<span id="n2yo_list_label">Select: </span><span
-					id="n2yo_list"></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<span className='float-right' id="tz"></span>
+			<div className="overflow-x-auto w-full -translate-y-12">
+				<table className="table-auto  w-full bg-secondarybackground border-border border-2">
+					<thead>
+						<tr className="">
+							<th className="border-border border-2 p-2"><EmojiComponent text="🧭 Start Azimuth" /></th>
+							<th className="border-border border-2 p-2"><EmojiComponent text="🔭 Max Elevation" /></th>
+							<th className="border-border border-2 p-2"><EmojiComponent text="🧭 End Azimuth" /></th>
+						</tr>
+					</thead>
+					<tbody>
+						{passTable}
+					</tbody>
+				</table>
 			</div>
-			<div id="n2yo_passes"></div>
-			<span id="n2yo_info_title"></span>
 		</div>
 	)
 };
 
 
-export default N2yoWidget2;
+export default SatMap;

@@ -2,49 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-
-body {
-    margin: 0;
-    text-align: center;
-}
-
-#n2yo_satmap1 {
-    width: 600px;
-    height: 360px;
-    border: 1px solid #999999;
-    z-index: 0;
-}
-
-#n2yo_timezone {
-    width: 600px;
-    font: bold 11px Arial;
-    text-align: right;
-    color: #000
-}
-
-#mySelect {
-    font-size: 11px;
-}
-
-#n2yo_passes {
-    font: normal 14px Arial;
-    background-color: #dadada;
-    text-align: center;
-}
-
-table.passes {
-    border-collapse: collapse;
-    border: 1px solid #999999;
-    width: 100%;
-}
-
-table.passes td,
-table.passes th {
-    border: 1px solid #999999;
-    font: 12px arial;
-    background-color: #0000b7;
-    color: #f2f2f2;
-    text-align: center;
-    vertical-align: middle;
-    padding: 5px;
+.emoji-text img {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin: 0 0.05em 0 0.1em;
+    vertical-align: -0.1em;
 }
