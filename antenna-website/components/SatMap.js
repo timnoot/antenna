@@ -535,7 +535,7 @@ const SatMap = ({ norad_id, satname, setAzimuth, setElevation }, ref) => {
 						<span id='long'></span>
 					</div>
 					<div>
-						<EmojiComponent text="🛰️ Height: " />
+						<EmojiComponent text="↕️ Height: " />
 						<span id='alt'></span>
 					</div>
 					<div>
