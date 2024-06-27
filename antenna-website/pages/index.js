@@ -10,8 +10,8 @@ export default function Home() {
       className={`flex flex-col items-center justify-between ${inter.className}`}
     >
       <div className='m-64'>
-        General Information
-        Github WiKi
+        General Information Soon<br />
+        Github WiKi Soon
       </div>
 
       <div className=''>
@@ -21,7 +21,7 @@ export default function Home() {
           </p>
           <Image
             src="/up-right-arrow.svg"
-            alt="Vercel Logo"
+            alt="Up Right Arrow"
             width={25}
             height={25}
             priority

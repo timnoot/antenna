@@ -1,5 +1,6 @@
 import SatMap from "../components/SatMap";
 import { useEffect, useRef, useState } from 'react';
+import ArduinoControl from "../components/ArduinoControl";
 
 const SATELLITES = [
     { "name": "NOAA 19", "norad_id": 33591 },
@@ -21,8 +22,8 @@ export default function Control() {
         <div className='flex flex-col items-center'>
             <h1 className='text-4xl mt-8'>Control Page</h1>
             <div className='flex w-full justify-between'>
-                <div className='flex flex-col items-center w-[600px] min-w-[300px] ml-6'>
-                    <select className=' bg-secondary border-2 border-border hover:brightness-125 text-3xl rounded-xl' onChange={(e) => {
+                <div className='flex flex-col items-center w-[600px] min-w-[300px] ml-2 xl:ml-16'>
+                    <select className=' bg-secondary border-2 border-border hover:brightness-125 text-3xl rounded-xl px-2 transition duration-300 ease-in-out' onChange={(e) => {
                         setNorad_id(e.target.value);
                         setSatname(SATELLITES.find(s => s.norad_id === parseInt(e.target.value)).name);
                     }}>
@@ -33,8 +34,8 @@ export default function Control() {
                         <SatMap norad_id={norad_id} satname={satname} setAzimuth={setAzimuth} setElevation={setElevation} />
                     </div>
                 </div>
-
-                <div className='flex flex-col items-center space-y-4'>
+                <div className='items-center w-[calc(100vw-650px)]'>
+                    <ArduinoControl />
                 </div>
             </div>
         </div>

@@ -524,7 +524,7 @@ const SatMap = ({ norad_id, satname, setAzimuth, setElevation }, ref) => {
 	return (
 		<div>
 			<div id="satmap1" className='w-[600px] h-[360px] z-0' />
-			<div className='w-full bg-primary bg-opacity-80 h-12 -translate-y-12 flex justify-between items-center pr-4'>
+			<div className='w-[600px] bg-primary bg-opacity-80 h-12 -translate-y-12 flex justify-between items-center pr-4'>
 				<div className='grid grid-cols-2 text-sm space-x-2'>
 					<div>
 						<EmojiComponent text="🌐 Latitude: " />
@@ -551,7 +551,7 @@ const SatMap = ({ norad_id, satname, setAzimuth, setElevation }, ref) => {
 					<span><EmojiComponent text="🔭 Elevation: " /><span id='el'></span></span>
 				</div>
 			</div>
-			<div className="overflow-x-auto w-full -translate-y-12">
+			<div className="overflow-x-auto w-[600px] -translate-y-12">
 				<table className="table-auto  w-full bg-secondarybackground border-border border-2">
 					<thead>
 						<tr className="">
