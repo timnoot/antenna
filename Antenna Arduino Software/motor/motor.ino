@@ -1,6 +1,7 @@
 #include <Wire.h>
 // Define pins
 const int ELEVATION_STEP = 2;
+
 const int AZIMUTH_STEP = 3;
 
 const int ELEVATION_DIR = 4;

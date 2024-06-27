@@ -421,19 +421,19 @@ class Client(App):
             SetLatLongPopup(lat, long).open()
 
         while True:
-            if time.time() - start > 1 and self.send_position:
+            if time.time() - start > 1: # and self.send_position:
                 start = time.time()
 
                 r = await self.get_satellite_location(self.NORAD_ID, self.LATITUDE, self.LONGITUDE)
-                if r["el"] < -5:
-                    CustomPopup(title="Error", message=f"Elevation is too low\naz={r['az']}°, el={r['el']}°").open()
-                    self.logger.error("Elevation is too low")
-                    self.send_position = False
-                    self.tracking_button.background_color = (0, 1, 0, 1)
-                    self.tracking_button.text = "Start sending position"
-                    continue
+                # if r["el"] < -5:
+                #     CustomPopup(title="Error", message=f"Elevation is too low\naz={r['az']}°, el={r['el']}°").open()
+                #     self.logger.error("Elevation is too low")
+                #     self.send_position = False
+                #     self.tracking_button.background_color = (0, 1, 0, 1)
+                #     self.tracking_button.text = "Start sending position"
+                #     continue
 
-                await self.write_arduino(r)
+                #await self.write_arduino(r)
 
                 self.azimuth = r["az"]
                 self.elevation = r["el"]
