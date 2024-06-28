@@ -8,9 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export default function Home({ readme }) {
   return (
     <>
-      <main
-        className={`flex flex-col items-center justify-between ${inter.className}`}
-      >
+      <main className={`flex flex-col items-center justify-between ${inter.className}`}>
         <div className='m-12'>
           <MarkdownRenderer markdown={readme} />
         </div>
