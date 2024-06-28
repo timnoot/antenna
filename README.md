@@ -17,10 +17,10 @@ One of our goals with this project is to make an open-source kit that students c
 Here's a preview of what our project has achieved so far:
 
 ### Captured Image
-![Captured Image](https://imgur.com/a/pV0Pzor)
+![Captured Image](https://i.imgur.com/NTM0zAt.png)
 
 ### Antenna Model
-![Antenna Model](https://imgur.com/a/00yqhNc)
+![Antenna Model](https://i.imgur.com/8GgxNeP.png)
 
 ## Getting Started
 
