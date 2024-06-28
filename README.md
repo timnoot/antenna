@@ -16,11 +16,18 @@ One of our goals with this project is to make an open-source kit that students c
 
 Here's a preview of what our project has achieved so far:
 
-### Captured Image
-![Captured Image](https://i.imgur.com/NTM0zAt.png)
-
-### Antenna Model
-![Antenna Model](https://i.imgur.com/8GgxNeP.png)
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://i.imgur.com/NTM0zAt.png" alt="Captured Image" height="300">
+      <br>Captured Image
+    </td>
+    <td align="center">
+      <img src="https://i.imgur.com/8GgxNeP.png" alt="Antenna Model" height="300">
+      <br>Antenna Model
+    </td>
+  </tr>
+</table>
 
 ## Getting Started
 
