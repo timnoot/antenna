@@ -27,7 +27,7 @@ const NavigationBar = () => {
 				</Link>
 
 				<Link href="/" className="relative flex items-center justify-center">
-					<h1 className="text-sm sm:text-xl md:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-center flex items-center mr-2">
+					<h1 className="text-sm sm:text-xl md:text-xl lg:text-xl xl:text-2xl 2xl:text-3xl 3xl:text-5xl font-bold text-center flex items-center mr-2">
 						<div className='hidden md:inline-block mr-1.5'>
 							Welcome to the
 						</div>

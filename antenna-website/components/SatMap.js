@@ -37,9 +37,6 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 	}, [norad_id]);
 
 	function initialize() {
-		var wd = 600;
-		wd = wd - 120;
-
 		map1 = L.map('satmap1').setView([0, 100], 1);
 		map1.setZoom(2);
 
@@ -516,10 +513,10 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 	}
 
 	return (
-		<div className=''>
-			<div id="satmap1" className='w-[600px] h-[360px] z-0' />
-			<div className='w-[600px] bg-primary bg-opacity-80 h-12 -translate-y-12 flex justify-between items-center pr-4'>
-				<div className='grid grid-cols-2 text-sm ml-2'>
+		<div className='w-[600px] 3xl:w-[900px]'>
+			<div id="satmap1" className='w-full h-[360px] 3xl:h-[500px] z-0' />
+			<div className='w-full bg-primary bg-opacity-80 h-12 -translate-y-12 3xl:h-20 3xl:-translate-y-20 flex justify-between items-center pr-4'>
+				<div className='grid grid-cols-2 text-sm 3xl:text-lg ml-2'>
 					<div>
 						<EmojiComponent text="🌐 Latitude: " />
 						<span id='lat'></span>
@@ -538,14 +535,14 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 					</div>
 				</div>
 				<div>
-					<span className='text-2xl'>{satname}</span>
+					<span className='text-2xl 3xl:text-4xl'>{satname}</span>
 				</div>
-				<div className='flex flex-col text-md'>
+				<div className='flex flex-col text-md 3xl:text-xl'>
 					<span><EmojiComponent text="🧭 Azimuth: " /><span id='az'></span></span>
 					<span><EmojiComponent text="🔭 Elevation: " /><span id='el'></span></span>
 				</div>
 			</div>
-			<div className="overflow-x-auto w-[600px] -mt-12">
+			<div className="overflow-x-auto w-full -mt-12 3xl:-mt-20 text-md 3xl:text-xl">
 				<table className="table-auto  w-full bg-secondarybackground border-border border-2">
 					<thead>
 						<tr className="">

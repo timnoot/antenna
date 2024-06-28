@@ -31,7 +31,7 @@ export default function Control({ lat, lng }) {
             <div className='flex flex-col items-center'>
                 <h1 className='text-4xl mt-8'>Control Page</h1>
                 <div className='flex w-full justify-between'>
-                    <div className='flex flex-col items-center w-[600px] min-w-[300px] ml-2 xl:ml-16'>
+                    <div className='flex flex-col items-center w-[600px] 3xl:w-[900px] min-w-[300px] ml-2 xl:ml-16'>
                         <div className="flex justify-between items-center w-full">
                             <div className="flex-grow">
                                 <div className="select-wrapper w-min">
@@ -44,7 +44,7 @@ export default function Control({ lat, lng }) {
                                     </select>
                                 </div>
                             </div>
-                            <p className="text-xl">Frequency: {freq}</p>
+                            <p className="text-xl 3xl:text-3xl">Frequency: {freq}</p>
                         </div>
                         <div className='w-full m-4'>
                             <SatMap lat={lat} lng={lng} norad_id={norad_id} satname={satname} setAzimuth={setAzimuth} setElevation={setElevation} />

@@ -109,11 +109,11 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
     }
 
     return (
-        <div className='flex justify-center'>
+        <div className='flex justify-center 3xl:ml-[150px]'>
             <div className='items-start w-full max-w-screen-lg px-4'>
                 <div className="flex flex-col items-center w-full">
                     <button
-                        className="bg-secondary border-2 border-border hover:bg-hover text-3xl rounded-xl transition duration-300 ease-in-out px-2 py-1 mb-3"
+                        className="bg-secondary border-2 border-border hover:bg-hover text-3xl 3xl:text-5xl 3xl:py-4 3xl:px-4 rounded-xl transition duration-300 ease-in-out px-2 py-1 mb-3"
                         onClick={() => {
                             if (connectionButton === 'Disconnect from Arduino') {
                                 closeSerial();
@@ -128,16 +128,16 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                     >
                         {connectionButton}
                     </button>
-                    <hr className="w-full border-[1px] border-border mb-16" />
-                    <div className='text-center border-border border-2 p-4 rounded-xl'>
-                        <button onClick={() => setTracking(!tracking)} className="bg-primary border-2 border-border hover:bg-hover text-2xl rounded-xl transition duration-300 ease-in-out px-3 py-2 mb-3">
+                    <hr className="w-full border-[1px] border-border mb-16 3xl:mb-32" />
+                    <div className='text-center border-border border-2 p-4 3xl:p-8 rounded-xl text-xl xl:text-2xl 3xl:text-4xl'>
+                        <button onClick={() => setTracking(!tracking)} className="bg-primary border-2 border-border hover:bg-hover rounded-xl transition duration-300 ease-in-out px-3 py-2 mb-3">
                             <EmojiComponent text={`${tracking ? 'Stop Tracking 🛑' : 'Start Tracking 🛰️'}`} />
                         </button>
                         <div className="flex items-center mb-3">
-                            <span role="img" aria-label="azimuth" className='text-2xl'><EmojiComponent text="📡🧭 Azimuth" /></span>
+                            <span role="img" aria-label="azimuth" className=''><EmojiComponent text="📡🧭 Azimuth" /></span>
                             <input
                                 type="text"
-                                className="border-2 border-border ml-[15px] px-2 py-1 w-20 bg-primary text-text rounded-md"
+                                className="border-2 border-border ml-[15px] 3xl:ml-[19px]  px-2 py-1 w-20 bg-primary text-text rounded-md"
                                 placeholder="0"
                                 id='azimuth_input'
                             />
@@ -145,12 +145,12 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                                 writeArduinoData({ "op": "1" });
                                 setAntennaAzimuth(0);
                                 document.getElementById('azimuth_input').value = 0;
-                            }} className="bg-primary border-2 border-border hover:bg-hover text-xl rounded-xl transition duration-300 ease-in-out px-3 py-1 ml-2">
+                            }} className="bg-primary border-2 border-border hover:bg-hover text-lg xl:text-xl 3xl:text-2xl rounded-xl transition duration-300 ease-in-out px-3 py-1 ml-2">
                                 Set 0
                             </button>
                         </div>
                         <div className="flex items-center">
-                            <span role="img" aria-label="elevation" className='text-2xl'><EmojiComponent text="📡🔭 Elevation" /></span>
+                            <span role="img" aria-label="elevation" className=''><EmojiComponent text="📡🔭 Elevation" /></span>
                             <input
                                 type="text"
                                 className="border-2 border-border ml-2 px-2 py-1 w-20 bg-primary text-text rounded-md"
@@ -161,7 +161,7 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                                 writeArduinoData({ "op": "2" });
                                 setAntennaElevation(0);
                                 document.getElementById('elevation_input').value = 0;
-                            }} className="bg-primary border-2 border-border hover:bg-hover text-xl rounded-xl transition duration-300 ease-in-out px-3 py-1 ml-2">
+                            }} className="bg-primary border-2 border-border hover:bg-hover text-lg xl:text-xl 3xl:text-2xl rounded-xl transition duration-300 ease-in-out px-3 py-1 ml-2">
                                 Set 0
                             </button>
                         </div>
@@ -173,8 +173,7 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                                 "az": antennaAzimuth,
                                 "el": antennaElevation
                             });
-                        }}
-                            className="bg-primary border-2 border-border hover:bg-hover text-2xl rounded-xl transition duration-300 ease-in-out px-3 py-2 mt-3">
+                        }} className="bg-primary border-2 border-border hover:bg-hover  rounded-xl transition duration-300 ease-in-out px-3 py-2 mt-3">
                             <EmojiComponent text="Manually Move Antenna 📡" />
                         </button>
                     </div>
