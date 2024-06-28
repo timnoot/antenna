@@ -11,18 +11,54 @@
 }
 
 .markdown {
-    @apply prose prose-lg mx-auto text-gray-100;
+    @apply prose prose-lg mx-auto text-text;
     /* Change the text color to gray-700 or any lighter shade you prefer */
 }
 
 .markdown h1 {
-    @apply text-4xl font-bold text-gray-100;
+    @apply text-4xl font-bold text-text;
+}
+
+.markdown h2 {
+    @apply text-3xl font-bold text-text;
+}
+
+.markdown h3 {
+    @apply text-2xl font-bold text-text;
+}
+
+.markdown h4 {
+    @apply text-xl font-bold text-text;
 }
 
 .markdown p {
-    @apply text-gray-100;
+    @apply text-text;
 }
 
 .markdown a {
     @apply text-blue-400 underline;
+}
+
+.markdown a:hover {
+    @apply text-blue-500;
+}
+
+.markdown strong {
+    @apply font-bold text-text;
+}
+
+.markdown em {
+    @apply italic text-text;
+}
+
+.markdown li {
+    @apply text-text;
+}
+
+.markdown li::marker {
+    @apply text-text;
+}
+
+.markdown img {
+    @apply rounded-lg;
 }
