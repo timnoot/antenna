@@ -18,15 +18,15 @@ One of our goals with this project is to make an open-source kit that students c
 
 Here's a preview of what our project has achieved so far:
 
-<table>
+<table style="margin: 0 auto;">
   <tr>
-    <td align="center">
-      <img src="https://raw.githubusercontent.com/timnoot/antenna/main/documentation/capture.png" alt="Captured Image" height="300">
-      <br>Captured Image
+    <td style="padding: 1rem; text-align: center;">
+      <img style="max-height: 32rem; width: auto;" src="https://raw.githubusercontent.com/timnoot/antenna/main/documentation/capture.png" alt="Captured Image"><br>
+      Captured Image
     </td>
-    <td align="center">
-      <img src="https://raw.githubusercontent.com/timnoot/antenna/main/documentation/model.png" alt="Antenna Model" height="300">
-      <br>Antenna Model
+    <td style="padding: 1rem; text-align: center;">
+      <img style="max-height: 32rem; width: auto;" src="https://raw.githubusercontent.com/timnoot/antenna/main/documentation/model.png" alt="Antenna Model"><br>
+      Antenna Model
     </td>
   </tr>
 </table>
