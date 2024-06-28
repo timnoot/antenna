@@ -12,16 +12,16 @@ var counter = 0;
 var mrk1;
 var step;
 var tleArray = new Array();
-var myLat = '';
-var myLng = '';
 var footPrint;
+var myLat;
+var myLng;
 
-const SatMap = ({ norad_id, satname, setAzimuth, setElevation }, ref) => {
+const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) => {
 	const [oldNoradId, setOldNoradId] = useState(norad_id);
 	const [passTable, setPassTable] = useState(null);
 
 	useEffect(() => {
-		console.log("Initializing N2YO widget")
+		console.log("Initializing Map")
 		initialize();
 	}, []);
 
@@ -72,17 +72,11 @@ const SatMap = ({ norad_id, satname, setAzimuth, setElevation }, ref) => {
 		setInterval(function () { updateTerminator(t) }, 500);
 
 		dayNightSun();
+		myLat = lat;
+		myLng = lng;
 
-		axios.get('https://ipapi.co/json')
-			.then(function (response) {
-				myLat = response.data.latitude;
-				myLng = response.data.longitude;
-				loadData(norad_id, start);
-				createHomeMarker();
-			})
-			.catch(function (error) {
-				console.log(error);
-			});
+		loadData(norad_id, start);
+		createHomeMarker();
 	}
 
 	function updateTerminator(t) {
@@ -525,7 +519,7 @@ const SatMap = ({ norad_id, satname, setAzimuth, setElevation }, ref) => {
 		<div className=''>
 			<div id="satmap1" className='w-[600px] h-[360px] z-0' />
 			<div className='w-[600px] bg-primary bg-opacity-80 h-12 -translate-y-12 flex justify-between items-center pr-4'>
-				<div className='grid grid-cols-2 text-sm space-x-2'>
+				<div className='grid grid-cols-2 text-sm ml-2'>
 					<div>
 						<EmojiComponent text="🌐 Latitude: " />
 						<span id='lat'></span>

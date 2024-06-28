@@ -1,9 +1,6 @@
 import { Inter } from "next/font/google";
-import Link from "next/link";
-import Image from "next/image";
 import axios from "axios";
 import MarkdownRenderer from '../components/MarkdownRenderer';
-import EmojiComponent from "../components/EmojiComponent";
 import Footer from '../components/Footer';
 
 const inter = Inter({ subsets: ["latin"] });
@@ -17,13 +14,6 @@ export default function Home({ readme }) {
         <div className='m-12'>
           <MarkdownRenderer markdown={readme} />
         </div>
-
-        <div className='fixed bottom-6 right-[20%] hidden lg:block'>
-          <Link href="/control" className='text-2xl flex items-center bg-primary border-border border-2 p-2 rounded-md hover:bg-hover transition duration-300 ease-in-out'>
-            <EmojiComponent text='Go to Control Page ↗️' />
-          </Link>
-        </div>
-
       </main>
       <Footer />
     </>
