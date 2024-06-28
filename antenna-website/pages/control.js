@@ -35,7 +35,7 @@ export default function Control() {
                     </div>
                 </div>
                 <div className='items-center w-[calc(100vw-650px)]'>
-                    <ArduinoControl />
+                    <ArduinoControl azimuth={azimuth} elevation={elevation} satname={satname} />
                 </div>
             </div>
         </div>

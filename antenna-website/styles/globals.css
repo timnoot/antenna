@@ -9,3 +9,20 @@
     margin: 0 0.05em 0 0.1em;
     vertical-align: -0.1em;
 }
+
+.markdown {
+    @apply prose prose-lg mx-auto text-gray-100;
+    /* Change the text color to gray-700 or any lighter shade you prefer */
+}
+
+.markdown h1 {
+    @apply text-4xl font-bold text-gray-100;
+}
+
+.markdown p {
+    @apply text-gray-100;
+}
+
+.markdown a {
+    @apply text-blue-400 underline;
+}

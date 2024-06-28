@@ -5,8 +5,29 @@ var port
 var reader
 var writer
 
-const ArduinoControl = () => {
+const ArduinoControl = ({ azimuth, elevation, satname }) => {
     const [connectionButton, setConnectionButton] = useState('Connect to Arduino');
+    const [tracking, setTracking] = useState(false);
+    const [antennaAzimuth, setAntennaAzimuth] = useState(0);
+    const [antennaElevation, setAntennaElevation] = useState(0);
+
+    useEffect(() => {
+        if (tracking) {
+            if (port && port.readable && port.writable) {
+                writeArduinoData({
+                    "op": "0",
+                    "sa": satname,
+                    "az": azimuth,
+                    "el": elevation
+                });
+                document.getElementById('azimuth_input').value = Math.round(azimuth * 100) / 100;
+                document.getElementById('elevation_input').value = Math.round(elevation * 100) / 100;
+            } else {
+                setTracking(false);
+                alert('Connect to Arduino first.');
+            }
+        }
+    }, [azimuth, elevation, tracking]);
 
     async function connectSerial() {
         const log = document.getElementById('target');
@@ -80,7 +101,11 @@ const ArduinoControl = () => {
     }
 
     function writeArduinoData(data) {
-        writeToSerial(toArduinoFormat(data));
+        if (port && port.readable && port.writable) {
+            writeToSerial(toArduinoFormat(data));
+        } else {
+            alert('Connect to Arduino first.');
+        }
     }
 
     return (
@@ -105,17 +130,22 @@ const ArduinoControl = () => {
                     </button>
                     <hr className="w-full border-[1px] border-border mb-16" />
 
-                    <button className="bg-primary border-2 border-border hover:bg-hover text-2xl rounded-xl transition duration-300 ease-in-out px-3 py-2 mb-3">
-                        <EmojiComponent text="Start Tracking 🛰️" />
+                    <button onClick={() => setTracking(!tracking)} className="bg-primary border-2 border-border hover:bg-hover text-2xl rounded-xl transition duration-300 ease-in-out px-3 py-2 mb-3">
+                        <EmojiComponent text={`${tracking ? 'Stop Tracking 🛑' : 'Start Tracking 🛰️'}`} />
                     </button>
                     <div className="flex items-center mb-3">
                         <span role="img" aria-label="azimuth" className='text-2xl'><EmojiComponent text="📡🧭 Azimuth" /></span>
                         <input
                             type="text"
-                            className="border-2 border-border ml-[14px] px-2 py-1 w-16 bg-primary text-text rounded-md"
-                            value="0"
+                            className="border-2 border-border ml-[14px] px-2 py-1 w-20 bg-primary text-text rounded-md"
+                            placeholder="0"
+                            id='azimuth_input'
                         />
-                        <button className="bg-primary border-2 border-border hover:bg-hover text-xl rounded-xl transition duration-300 ease-in-out px-3 py-1 ml-2">
+                        <button onClick={() => {
+                            writeArduinoData({ "op": "1" });
+                            setAntennaAzimuth(0);
+                            document.getElementById('azimuth_input').value = 0;
+                        }} className="bg-primary border-2 border-border hover:bg-hover text-xl rounded-xl transition duration-300 ease-in-out px-3 py-1 ml-2">
                             Set 0
                         </button>
                     </div>
@@ -123,15 +153,28 @@ const ArduinoControl = () => {
                         <span role="img" aria-label="elevation" className='text-2xl'><EmojiComponent text="📡🔭 Elevation" /></span>
                         <input
                             type="text"
-                            className="border-2 border-border ml-2 px-2 py-1 w-16 bg-primary text-text rounded-md"
+                            className="border-2 border-border ml-2 px-2 py-1 w-20 bg-primary text-text rounded-md"
                             placeholder="0"
-                            value="0"
+                            id="elevation_input"
                         />
-                        <button className="bg-primary border-2 border-border hover:bg-hover text-xl rounded-xl transition duration-300 ease-in-out px-3 py-1 ml-2">
+                        <button onClick={() => {
+                            writeArduinoData({ "op": "2" });
+                            setAntennaElevation(0);
+                            document.getElementById('elevation_input').value = 0;
+                        }} className="bg-primary border-2 border-border hover:bg-hover text-xl rounded-xl transition duration-300 ease-in-out px-3 py-1 ml-2">
                             Set 0
                         </button>
                     </div>
-                    <button className="bg-primary border-2 border-border hover:bg-hover text-2xl rounded-xl transition duration-300 ease-in-out px-3 py-2 mt-3">
+                    <button onClick={() => {
+                        setAntennaAzimuth(document.getElementById('azimuth_input').value);
+                        setAntennaElevation(document.getElementById('elevation_input').value);
+                        writeArduinoData({
+                            "op": "3",
+                            "az": antennaAzimuth,
+                            "el": antennaElevation
+                        });
+                    }}
+                        className="bg-primary border-2 border-border hover:bg-hover text-2xl rounded-xl transition duration-300 ease-in-out px-3 py-2 mt-3">
                         <EmojiComponent text="Manually Move Antenna 📡" />
                     </button>
                 </div>
