@@ -1,5 +1,7 @@
 # Satellite Tracker Antenna - LiS
 
+[GitHub Repository](https://github.com/timnoot/antenna) | [Wiki](https://github.com/timnoot/antenna/wiki) | [Website](https://antenna-six.vercel.app/)
+
 Welcome to the Satellite Tracker Antenna project! This project aims to develop an automated antenna system capable of tracking weather (NOAA) satellites and receiving high-quality images from space.
 
 ## Open-Source Kit for Students
