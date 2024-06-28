@@ -5,8 +5,13 @@ const NavigationBar = () => {
 	return (
 		<div className="bg-primary border-border border-2 p-4 w-full flex justify-center items-center h-[82px] relative">
 			<Link href="/" className="relative flex items-center justify-center">
-				<h1 className="text-2xl lg:text-4xl font-bold text-center">
-					Welcome to the NOA Satellite Tracker Website
+				<h1 className="text-sm sm:text-2xl md:text-2xl lg:text-4xl font-bold text-center flex items-center">
+					<div className='hidden md:inline-block mr-1.5'>
+						Welcome to the
+					</div>
+					<div className='hidden xs:inline-block'>
+						NOA Satellite Tracker Website
+					</div>
 				</h1>
 			</Link>
 			<Link href="/" className="absolute left-2 top-0">

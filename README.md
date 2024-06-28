@@ -1,6 +1,6 @@
 # Satellite Tracker Antenna - LiS
 
-[GitHub Repository](https://github.com/timnoot/antenna) | [Wiki](https://github.com/timnoot/antenna/wiki) | [Website](https://antenna-six.vercel.app/)
+[GitHub](https://github.com/timnoot/antenna) | [Wiki](https://github.com/timnoot/antenna/wiki) | [Website](https://antenna-six.vercel.app/)
 
 Welcome to the Satellite Tracker Antenna project! This project aims to develop an automated antenna system capable of tracking weather (NOAA) satellites and receiving high-quality images from space.
 
@@ -42,7 +42,7 @@ For detailed instructions, refer to the [Wiki](https://github.com/timnoot/antenn
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/timnoot/antenna/blob/main/LICENSE) file for details.
 
 ## Contact
 
