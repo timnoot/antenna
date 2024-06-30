@@ -21,11 +21,11 @@ Here's a preview of what our project has achieved so far:
 <table style="margin: 0 auto;">
   <tr>
     <td style="padding: 1rem; text-align: center;">
-      <img style="max-height: 32rem; width: auto;" src="https://raw.githubusercontent.com/timnoot/antenna/main/documentation/capture.png" alt="Captured Image"><br>
+      <img style="max-height: 32rem; width: auto;" src="https://raw.githubusercontent.com/timnoot/antenna/main/documentation/capture.png" alt="Captured Image">
       Captured Image
     </td>
     <td style="padding: 1rem; text-align: center;">
-      <img style="max-height: 32rem; width: auto;" src="https://raw.githubusercontent.com/timnoot/antenna/main/documentation/model.png" alt="Antenna Model"><br>
+      <img style="max-height: 32rem; width: auto;" src="https://raw.githubusercontent.com/timnoot/antenna/main/documentation/model.png" alt="Antenna Model">
       Antenna Model
     </td>
   </tr>

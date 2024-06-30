@@ -280,7 +280,7 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 
 		if (currPos != null) {
 			if (counter == 0) {
-				map1.setView(currPos.latlng);
+				// map1.setView(currPos.latlng);
 			}
 			mrk1._icon.style.display = 'block';
 			mrk1.setLatLng(currPos.latlng);
