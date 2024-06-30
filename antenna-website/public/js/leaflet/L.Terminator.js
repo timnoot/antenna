@@ -137,11 +137,6 @@
 				latLng[0] = [-90, -this.options.longitudeRange / 2];
 				latLng[latLng.length] = [-90, this.options.longitudeRange / 2];
 			}
-			// also draw the same terminator outside the map
-			console.log(latLng);
-
-
-
 
 			return latLng;
 		}
