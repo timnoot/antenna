@@ -56,9 +56,6 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
 
         while (true) {
             const { value, done } = await reader.read();
-            if (value) {
-                log.textContent += value + '\n';
-            }
             console.log(value);
             if (done) {
                 console.log('[readLoop] DONE', done);
@@ -137,9 +134,10 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                             <span role="img" aria-label="azimuth" className=''><EmojiComponent text="📡🧭 Azimuth" /></span>
                             <input
                                 type="text"
-                                className="border-2 border-border ml-[15px] 3xl:ml-[19px]  px-2 py-1 w-20 bg-primary text-text rounded-md"
-                                placeholder="0"
+                                className="border-2 border-border ml-[15px] 3xl:ml-[19px]  px-2 py-1 w-20 xl:w-24 3xl:w-32 bg-primary text-text rounded-md"
+                                placeholder="🧭"
                                 id='azimuth_input'
+                                defaultValue={antennaAzimuth}
                             />
                             <button onClick={() => {
                                 writeArduinoData({ "op": "1" });
@@ -153,9 +151,10 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                             <span role="img" aria-label="elevation" className=''><EmojiComponent text="📡🔭 Elevation" /></span>
                             <input
                                 type="text"
-                                className="border-2 border-border ml-2 px-2 py-1 w-20 bg-primary text-text rounded-md"
-                                placeholder="0"
+                                className="border-2 border-border ml-2 px-2 py-1 w-20 xl:w-24 3xl:w-32 bg-primary text-text rounded-md"
+                                placeholder="🔭"
                                 id="elevation_input"
+                                defaultValue={antennaElevation}
                             />
                             <button onClick={() => {
                                 writeArduinoData({ "op": "2" });
