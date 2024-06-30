@@ -10,7 +10,6 @@ var sunOverlay;
 var drawingOverlayArray = [];
 var counter = 0;
 var mrk1;
-var step;
 var tleArray = new Array();
 var footPrint;
 var myLat;
@@ -37,26 +36,29 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 	}, [norad_id]);
 
 	function initialize() {
-		map1 = L.map('satmap1').setView([0, 100], 1);
-		map1.setZoom(2);
+		map1 = L.map('satmap1', {
+			zoom: 2,
+			worldCopyJump: true,
+		}).setView([0, 0], 1);
 
-		var mapStyle1 = L.tileLayer('https://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
-			attribution: ''
-		});
 
-		var mapStyle2 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
-			attribution: '',
-			maxZoom: 13
-		});
+		// var mapStyle1 = L.tileLayer('https://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
+		// 	attribution: ''
+		// });
 
-		var mapStyle3 = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-			attribution: ''
-		});
+		// var mapStyle2 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
+		// 	attribution: '',
+		// 	maxZoom: 13
+		// });
 
-		var mapStyle4 = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-			maxZoom: 17,
-			attribution: ''
-		});
+		// var mapStyle3 = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+		// 	attribution: ''
+		// });
+
+		// var mapStyle4 = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+		// 	maxZoom: 17,
+		// 	attribution: ''
+		// });
 
 		var mapStyle5 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
 			attribution: ''
@@ -68,6 +70,7 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 		t.addTo(map1);
 		setInterval(function () { updateTerminator(t) }, 500);
 
+
 		dayNightSun();
 		myLat = lat;
 		myLng = lng;
@@ -77,7 +80,9 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 	}
 
 	function updateTerminator(t) {
-		var t2 = L.terminator();
+		var t2 = L.terminator({
+			longitudeRange: 1080,
+		});
 		t.setLatLngs(t2.getLatLngs());
 		t.redraw();
 	}
@@ -130,19 +135,22 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 
 		mrk1._icon.style.display = 'none';
 
-		var urls = 'https://api.allorigins.win/raw?url=https://www.n2yo.com/sat/gettle.php?s=' + sid;
+		// var urls = 'https://api.allorigins.win/raw?url=https://www.n2yo.com/sat/gettle.php?s=' + sid;
+		const urls = `https://tle.ivanstanojevic.me/api/tle/${sid}`;
 		axios.get(urls)
 			.then(function (data) {
 				if (data != null) {
 					tleArray = data.data;
+					if (urls.includes("tle.ivanstanojevic.me")) {
+						tleArray = [tleArray.line1, tleArray.line2];
+					}
 
-					// Draw orbit path
 					let Spos = getCurrentPosition(new Date(), sid);
 					let orbitTime = 2 * Math.PI * Math.sqrt(Math.pow(Spos.altitude + 6378.135, 3) / 398600.8);
 					console.log("Orbit time: " + orbitTime + " seconds");
 
-					let stepSize = 500;
-					step = Math.floor(orbitTime / stepSize * 1.2);
+					let stepSize = 250;
+					let step = orbitTime / stepSize;
 					console.log("Step: " + step);
 
 					let g1Array = [[]];
@@ -152,21 +160,43 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 					for (let i = 0; i < stepSize; i++) {
 						// Go 25 percent back and 75 percent forward
 						let secondsToAdd = -(stepSize / 4) * step + i * step;
+
 						let d = new Date(currentDate.getTime() + secondsToAdd * 1000);
 						let pos = getCurrentPosition(d, sid);
 
 						if (Math.abs(pos.longitude - oldlng) > 90 && oldlng != null) {
+							if (pos.longitude > 0) {
+								g1Array[k].push([pos.latitude, pos.longitude - 359.9]);
+							} else {
+								g1Array[k].push([pos.latitude, pos.longitude + 359.9]);
+							}
 							k = k + 1;
 							g1Array[k] = [];
 						}
-						oldlng = pos.longitude;
 
+						oldlng = pos.longitude;
 						g1Array[k].push([pos.latitude, pos.longitude]);
 					}
 
 					for (let i = 0; i < g1Array.length; i++) {
 						drawingOverlayArray.push(L.polyline(g1Array[i], { color: 'red', weight: 2, opacity: 0.5 }).addTo(map1));
 					}
+
+					// draw the polyLine also outside the map
+					for (let i = 0; i < g1Array.length; i++) {
+						// change the longitude
+						let tempArrayPositive = [];
+						let tempArrayNegative = [];
+						for (let j = 0; j < g1Array[i].length; j++) {
+							let temp = g1Array[i][j];
+							tempArrayPositive.push([temp[0], temp[1] + 360]);
+							tempArrayNegative.push([temp[0], temp[1] - 360]);
+						}
+
+						drawingOverlayArray.push(L.polyline(tempArrayPositive, { color: 'red', weight: 2, opacity: 0.5 }).addTo(map1));
+						drawingOverlayArray.push(L.polyline(tempArrayNegative, { color: 'red', weight: 2, opacity: 0.5 }).addTo(map1));
+					}
+
 
 					// Find next pass
 					console.log("My lat: " + myLat + " My lng: " + myLng)
@@ -241,6 +271,8 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 	function animateSat(sid) {
 		var d = new Date();
 		var cPos = getCurrentPosition(d, sid);
+		if (cPos == null) return;
+
 		setAzimuth(cPos.azimuth);
 		setElevation(cPos.elevation);
 
@@ -298,6 +330,7 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 	function getCurrentPosition(now, s) {
 		// NOTE: while Javascript Date returns months in range 0-11, all satellite.js methods require
 		// months in range 1-12.
+		if (tleArray == null || tleArray.length == 0) return null;
 		var x1 = tleArray[0];
 		var x2 = tleArray[1];
 
@@ -378,6 +411,39 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 	// 	return speed;
 	// }
 
+	function addInfiniteMarker(...args) {
+		const marker = L.marker(...args).addTo(map1);
+		const { lat, lng } = marker.getLatLng();
+
+		var wrapMarker = function () {
+			let bounds = map1.getBounds();
+			let west = bounds.getWest();
+			let east = bounds.getEast();
+
+			// Clear existing markers if they exist
+			marker._wrapMarkers = marker._wrapMarkers || [];
+			marker._wrapMarkers.forEach(function (m) { map1.removeLayer(m); });
+			marker._wrapMarkers = [];
+
+			// Add wrapped markers
+			for (var i = Math.floor(west / 360) - 1; i <= Math.ceil(east / 360) + 1; i++) {
+				if (i !== 0) {
+					let wrappedLng = lng + i * 360;
+
+					let wrappedMarker = L.marker([lat, wrappedLng], marker.options).addTo(map1);
+					marker._wrapMarkers.push(wrappedMarker);
+				}
+			}
+		};
+
+		// Initial call to wrapMarker
+		wrapMarker();
+
+		// Update wrapped markers on moveend event
+		map1.on('moveend', wrapMarker);
+		return marker;
+	}
+
 	function createSatelliteMarker(id) {
 		let centerWorld = L.latLng(0, 0);
 		let icon = L.icon({
@@ -386,6 +452,8 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 		});
 
 		return L.marker(centerWorld, { icon: icon });
+		// return addInfiniteMarker(centerWorld, { icon: icon });
+
 	}
 
 	function createHomeMarker() {
@@ -396,7 +464,7 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 			iconSize: [7, 7], // size of the icon
 		});
 
-		let sMarker1 = L.marker(home, { icon: icon });
+		let sMarker1 = addInfiniteMarker(home, { icon: icon });
 		sMarker1.addTo(map1);
 
 		return sMarker1;
@@ -419,13 +487,15 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 		let g = (360 / 365.25) * (DY + LT / 24);
 		let TC = 0.004297 + 0.107029 * Math.cos(g * Math.PI / 180) - 1.837877 * Math.sin(g * Math.PI / 180) - 0.837378 * Math.cos(2 * g * Math.PI / 180) - 2.340475 * Math.sin(2 * g * Math.PI / 180);
 		let SHA = (LT - 12) * 15 + TC;
-		var icon = L.icon({
+		let icon = L.icon({
 			iconUrl: './img/sun.gif',
 			iconSize: [16, 16], // size of the icon
 			iconAnchor: [3, 3], // point of the icon which will correspond to marker's location
 		});
 
-		var sunMarker = L.marker([dec, -SHA], { icon: icon });
+		// var sunMarker = L.marker([dec, -SHA], { icon: icon });
+		let sunMarker = addInfiniteMarker([dec, -SHA], { icon: icon });
+
 		return sunMarker;
 	}
 
