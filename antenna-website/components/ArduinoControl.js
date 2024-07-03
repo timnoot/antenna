@@ -138,6 +138,15 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                                 placeholder="🧭"
                                 id='azimuth_input'
                                 defaultValue={antennaAzimuth}
+                                onEnter={() => {
+                                    setAntennaAzimuth(document.getElementById('azimuth_input').value);
+                                    setAntennaElevation(document.getElementById('elevation_input').value);
+                                    writeArduinoData({
+                                        "op": "3",
+                                        "az": antennaAzimuth,
+                                        "el": antennaElevation
+                                    });
+                                }}
                             />
                             <button onClick={() => {
                                 writeArduinoData({ "op": "1" });
@@ -155,6 +164,15 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                                 placeholder="🔭"
                                 id="elevation_input"
                                 defaultValue={antennaElevation}
+                                onEnter={() => {
+                                    setAntennaAzimuth(document.getElementById('azimuth_input').value);
+                                    setAntennaElevation(document.getElementById('elevation_input').value);
+                                    writeArduinoData({
+                                        "op": "3",
+                                        "az": antennaAzimuth,
+                                        "el": antennaElevation
+                                    });
+                                }}
                             />
                             <button onClick={() => {
                                 writeArduinoData({ "op": "2" });
