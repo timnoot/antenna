@@ -4,6 +4,7 @@ import EmojiComponent from "./EmojiComponent";
 var port
 var reader
 var writer
+var lastUpdate = 0
 
 const ArduinoControl = ({ azimuth, elevation, satname }) => {
     const [connectionButton, setConnectionButton] = useState('Connect to Arduino');
@@ -14,12 +15,20 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
     useEffect(() => {
         if (tracking) {
             if (port && port.readable && port.writable) {
-                writeArduinoData({
-                    "op": "0",
-                    "sa": satname,
-                    "az": azimuth,
-                    "el": elevation
-                });
+                if (Date.now() - lastUpdate < 3000) return;
+                lastUpdate = Date.now();
+
+                console.log(Math.abs(antennaAzimuth - azimuth), Math.abs(antennaElevation - elevation));
+                if (Math.abs(antennaAzimuth - azimuth) > 0.5 || Math.abs(antennaElevation - elevation) > 0.5) {
+                    writeArduinoData({
+                        "op": "0",
+                        "az": Math.round(azimuth * 100) / 100,
+                        "el": Math.round(elevation * 100) / 100
+                    })
+                    setAntennaAzimuth(Math.round(azimuth * 100) / 100);
+                    setAntennaElevation(Math.round(elevation * 100) / 100);
+                }
+
                 document.getElementById('azimuth_input').value = Math.round(azimuth * 100) / 100;
                 document.getElementById('elevation_input').value = Math.round(elevation * 100) / 100;
             } else {
@@ -68,6 +77,7 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
     }
 
     async function writeToSerial(data) {
+        console.log('Writing data:', data);
         const encoder = new TextEncoder();
         await writer.write(encoder.encode(data));
     }
@@ -144,8 +154,8 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                                         setAntennaElevation(document.getElementById('elevation_input').value);
                                         writeArduinoData({
                                             "op": "3",
-                                            "az": antennaAzimuth,
-                                            "el": antennaElevation
+                                            "az": document.getElementById('azimuth_input').value,
+                                            "el": document.getElementById('elevation_input').value
                                         });
                                     }
                                 }}
@@ -172,8 +182,8 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                                         setAntennaElevation(document.getElementById('elevation_input').value);
                                         writeArduinoData({
                                             "op": "3",
-                                            "az": antennaAzimuth,
-                                            "el": antennaElevation
+                                            "az": document.getElementById('azimuth_input').value,
+                                            "el": document.getElementById('elevation_input').value
                                         });
                                     }
                                 }}
@@ -191,8 +201,8 @@ const ArduinoControl = ({ azimuth, elevation, satname }) => {
                             setAntennaElevation(document.getElementById('elevation_input').value);
                             writeArduinoData({
                                 "op": "3",
-                                "az": antennaAzimuth,
-                                "el": antennaElevation
+                                "az": document.getElementById('azimuth_input').value,
+                                "el": document.getElementById('elevation_input').value
                             });
                         }} className="bg-primary border-2 border-border hover:bg-hover  rounded-xl transition duration-300 ease-in-out px-3 py-2 mt-3">
                             <EmojiComponent text="Manually Move Antenna 📡" />
