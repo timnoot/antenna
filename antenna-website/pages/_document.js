@@ -7,7 +7,7 @@ export default function Document() {
       <script src="./js/leaflet/leaflet.js" type="text/javascript" />
       <script src="./js/leaflet/L.Terminator.js" type="text/javascript" />
       <script src="./js/satellite-js/dist/satellite.min.js" />
-      <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
 
       <link rel="stylesheet" href="./js/leaflet/leaflet.css" />
 
