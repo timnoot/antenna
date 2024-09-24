@@ -1,0 +1,7 @@
+"Reference","Value","Datasheet","Footprint","Qty","DNP"
+"A1","Arduino Nano","https://content.arduino.cc/assets/NANOEveryV3.0_sch.pdf","Module:Arduino_Nano","1",""
+"A2","Motor Driver A4988 Elevation","https://www.pololu.com/product/2980/pictures","Module:Pololu_Breakout-16_15.2x20.3mm","1",""
+"A3","Motor Driver A4988 Azimuth","https://www.pololu.com/product/2980/pictures","Module:Pololu_Breakout-16_15.2x20.3mm","1",""
+"M1","Stepper Motor Azimuth","http://www.infineon.com/dgdl/Application-Note-TLE8110EE_driving_UniPolarStepperMotor_V1.1.pdf?fileId=db3a30431be39b97011be5d0aa0a00b0","","1",""
+"M2","Stepper Motor Elevation","http://www.infineon.com/dgdl/Application-Note-TLE8110EE_driving_UniPolarStepperMotor_V1.1.pdf?fileId=db3a30431be39b97011be5d0aa0a00b0","","1",""
+"SW1","End Switch Elevation","http://www.apem.com/int/index.php?controller=attachment&id_attachment=488","","1",""
