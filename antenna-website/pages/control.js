@@ -15,6 +15,7 @@ const SATELLITES = [
     { "name": "Meteor M2", "norad_id": 40069, "freq": '137.100-137.900 MHz' },
 
     { "name": "ISS", "norad_id": 25544, "freq": '145.825 MHz' },
+    { "name": "Sim. NOAA 19", "norad_id": 33591, "freq": '137.100 MHz', simulated: true },
 ]
 
 
@@ -22,6 +23,7 @@ export default function Control({ lat, lng }) {
     const [norad_id, setNorad_id] = useState(33591);
     const [satname, setSatname] = useState('NOAA 19');
     const [freq, setFreq] = useState('137.100 MHz');
+    const [simulationStartDate, setSimulationStartDate] = useState(null);
 
     const [azimuth, setAzimuth] = useState(0);
     const [elevation, setElevation] = useState(0);
@@ -36,18 +38,19 @@ export default function Control({ lat, lng }) {
                             <div className="flex-grow">
                                 <div className="select-wrapper w-min">
                                     <select className="bg-secondary pr-8 border-2 border-border hover:brightness-125 text-3xl rounded-xl px-2 transition duration-300 ease-in-out cursor-pointer" onChange={(e) => {
-                                        setNorad_id(e.target.value);
-                                        setSatname(SATELLITES.find(s => s.norad_id === parseInt(e.target.value)).name);
-                                        setFreq(SATELLITES.find(s => s.norad_id === parseInt(e.target.value)).freq);
+                                        setNorad_id(SATELLITES.find(s => s.name === e.target.value).norad_id);
+                                        setSatname(e.target.value);
+                                        setFreq(SATELLITES.find(s => s.name === e.target.value).freq);
+                                        setSimulationStartDate(SATELLITES.find(s => s.name === e.target.value).simulated ? new Date() : null);
                                     }}>
-                                        {SATELLITES.map(s => <option key={s.norad_id} value={s.norad_id}>{s.name}</option>)}
+                                        {SATELLITES.map(s => <option key={s.norad_id + s.name} value={s.name}>{s.name}</option>)}
                                     </select>
                                 </div>
                             </div>
                             <p className="text-xl 3xl:text-3xl">Frequency: {freq}</p>
                         </div>
                         <div className='w-full m-4'>
-                            <SatMap lat={lat} lng={lng} norad_id={norad_id} satname={satname} setAzimuth={setAzimuth} setElevation={setElevation} />
+                            <SatMap lat={lat} lng={lng} norad_id={norad_id} satname={satname} setAzimuth={setAzimuth} setElevation={setElevation} simulationStartDate={simulationStartDate} />
                         </div>
                     </div>
                     <div className='items-center w-[calc(100vw-650px)]'>

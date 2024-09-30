@@ -15,8 +15,12 @@ var footPrint;
 var myLat;
 var myLng;
 
-const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) => {
-	const [oldNoradId, setOldNoradId] = useState(norad_id);
+const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation, simulationStartDate }, ref) => {
+	console.log("SatMap component");
+	console.log(simulationStartDate);
+	console.log(norad_id);
+
+	const [oldNoradIdName, setOldNoradIdName] = useState(norad_id + satname);
 	const [passTable, setPassTable] = useState(null);
 
 	useEffect(() => {
@@ -25,15 +29,15 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 	}, []);
 
 	useEffect(() => {
-		if (norad_id == oldNoradId) {
+		if (norad_id + satname == oldNoradIdName) {
 			console.log("Norad ID did not change, returning")
 			return;
 		}
-		setOldNoradId(norad_id);
+		setOldNoradIdName(norad_id);
 
 		console.log("Norad ID changed to: " + norad_id);
 		setSatellite(norad_id);
-	}, [norad_id]);
+	}, [norad_id, satname]);
 
 	function initialize() {
 		map1 = L.map('satmap1', {
@@ -145,7 +149,14 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 						tleArray = [tleArray.line1, tleArray.line2];
 					}
 
-					let Spos = getCurrentPosition(new Date(), sid);
+					let currentDate = new Date();
+					if (simulationStartDate != null) {
+						let timePassed = currentDate.getTime() - simulationStartDate.getTime();
+						let simulationStart = 1727381571000
+						currentDate = new Date(simulationStart + timePassed);
+					}
+
+					let Spos = getCurrentPosition(currentDate, sid);
 					let orbitTime = 2 * Math.PI * Math.sqrt(Math.pow(Spos.altitude + 6378.135, 3) / 398600.8);
 					console.log("Orbit time: " + orbitTime + " seconds");
 
@@ -156,7 +167,6 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 					let g1Array = [[]];
 					let k = 0;
 					let oldlng = null;
-					let currentDate = new Date();
 					for (let i = 0; i < stepSize; i++) {
 						// Go 25 percent back and 75 percent forward
 						let secondsToAdd = -(stepSize / 4) * step + i * step;
@@ -196,7 +206,6 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 						drawingOverlayArray.push(L.polyline(tempArrayPositive, { color: 'red', weight: 2, opacity: 0.5 }).addTo(map1));
 						drawingOverlayArray.push(L.polyline(tempArrayNegative, { color: 'red', weight: 2, opacity: 0.5 }).addTo(map1));
 					}
-
 
 					// Find next pass
 					console.log("My lat: " + myLat + " My lng: " + myLng)
@@ -270,6 +279,14 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 
 	function animateSat(sid) {
 		var d = new Date();
+		if (simulationStartDate != null) {
+			let timePassed = (d.getTime() - simulationStartDate.getTime()) % 200000; // go back to start after x minutes
+			console.log(timePassed);
+
+			let simulationStart = 1727381571000;
+			d = new Date(simulationStart + timePassed * 5);
+		}
+
 		var cPos = getCurrentPosition(d, sid);
 		if (cPos == null) return;
 
@@ -584,7 +601,17 @@ const SatMap = ({ lat, lng, norad_id, satname, setAzimuth, setElevation }, ref) 
 
 	return (
 		<div className='w-[600px] 3xl:w-[900px]'>
-			<div id="satmap1" className='w-full h-[360px] 3xl:h-[500px] z-0' />
+			<div id="satmap1" className='w-full h-[360px] 3xl:h-[500px] z-0' >
+				{
+					simulationStartDate != null &&
+					// put in the center of the map
+					<div className="text-3xl text-center absolute top-1/4 left-2/4 transform -translate-x-1/2 -translate-y-1/2 z-[999] bg-gray-700 opacity-30 p-2 rounded-lg">
+						<EmojiComponent text="🚀 Simulated Pass" />
+						<div className='text-2xl'><EmojiComponent text="🕒⏩ 5x speed" /></div>
+					</div>
+
+				}
+			</div>
 			<div className='w-full bg-primary bg-opacity-80 h-12 -translate-y-12 3xl:h-20 3xl:-translate-y-20 flex justify-between items-center pr-4'>
 				<div className='grid grid-cols-2 text-sm 3xl:text-lg ml-2'>
 					<div>
