@@ -32,7 +32,7 @@ const NavigationBar = () => {
 							Welcome to the
 						</div>
 						<div className='hidden xs:inline-block'>
-							NOA Satellite Tracker Website
+							NOAA Satellite Tracker Website
 						</div>
 					</h1>
 				</Link>

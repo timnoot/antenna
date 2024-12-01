@@ -69,8 +69,17 @@ export async function getServerSideProps({ req }) {
     const isLocalhost = ip === '127.0.0.1' || ip === '::1';
 
     const res = await axios.get(isLocalhost ? 'https://ipapi.co/json' : `https://ipapi.co/${ip}/json`);
+    let latitude, longitude;
 
-    const { latitude, longitude } = res.data;
+    if (res.status !== 200) {
+        console.log('Failed to fetch estimated location API');
+        latitude = 52.1601;
+        longitude = 4.4970;
+    } else {
+        latitude = res.data.latitude;
+        longitude = res.data.longitude;
+    }
+
 
     return {
         props: {
